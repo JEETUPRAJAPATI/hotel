@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5001/api';
+const API_URL = 'https://hotel-backend-wh9t.onrender.com/api';
 
 // Create axios instance
 const api = axios.create({

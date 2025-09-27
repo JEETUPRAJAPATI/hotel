@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5001/api/restaurant';
+const API_URL = 'https://hotel-backend-wh9t.onrender.com/api/restaurant';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
