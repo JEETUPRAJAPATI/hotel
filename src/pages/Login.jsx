@@ -21,7 +21,7 @@ const Login = () => {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault() // Prevent form submission
+    e.preventDefault()
     
     if (!formData.email || !formData.password) {
       toast.error('Please fill in all fields')
@@ -30,10 +30,9 @@ const Login = () => {
 
     try {
       setLoading(true)
-      console.log('Submitting login with:', formData)
       
-      // Direct API call for testing
-      const response = await fetch('http://localhost:5001/api/auth/login', {
+      // Use direct fetch to avoid auth service caching issues
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,28 +43,32 @@ const Login = () => {
       const data = await response.json()
       
       if (response.ok && data.success) {
-        // Store token and user data
+        // Store authentication data
         localStorage.setItem('token', data.data.token)
+        localStorage.setItem('user', JSON.stringify(data.data))
         
         toast.success(`Welcome back, ${data.data.name}!`)
         
         // Navigate based on role
-        if (data.data.role === 'restaurant_owner') {
-          navigate('/restaurant/dashboard')
-        } else if (data.data.role === 'super_admin' || data.data.role === 'admin') {
-          navigate('/admin')
-        } else {
-          navigate('/dashboard')
+        const roleRedirects = {
+          'super_admin': '/admin',
+          'admin': '/admin',
+          'manager': '/manager/dashboard',
+          'owner': '/owner',
+          'restaurant_owner': '/restaurant/dashboard',
+          'staff': '/staff'
         }
         
-        // Reload the page to update auth context
-        window.location.reload()
+        const redirectPath = roleRedirects[data.data.role] || '/dashboard'
+        
+        // Force page reload to ensure auth context updates
+        window.location.href = redirectPath
       } else {
-        toast.error(data.message || 'Login failed')
+        toast.error(data.message || 'Invalid email or password')
       }
     } catch (error) {
       console.error('Login error:', error)
-      toast.error('Unable to connect to server. Please check if the backend is running.')
+      toast.error('Invalid email or password')
     } finally {
       setLoading(false)
     }
@@ -143,22 +146,31 @@ const Login = () => {
                 {loading ? <LoadingSpinner size="sm" color="white" /> : 'Sign in'}
               </button>
             </div>
+
+            <div className="text-center">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-primary-600 hover:text-primary-500"
+              >
+                Forgot your password?
+              </Link>
+            </div>
           </form>
 
           {/* Demo Credentials Section */}
           <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <h3 className="text-sm font-medium text-blue-900 mb-2">Demo Credentials</h3>
             <div className="space-y-1 text-xs text-blue-800">
-              <div><strong>Admin:</strong> admin@hotel.com / password123</div>
-              <div><strong>Manager:</strong> manager@hotel.com / password123</div>
-              <div><strong>Restaurant Owner:</strong> owner@restaurant.com / password123</div>
+              {/* <div><strong>Admin:</strong> admin@hotel.com / password123</div> */}
+              <div><strong>Hotel Owner:</strong> manager@hotel.com / password123</div>
+              {/* <div><strong>Restaurant Owner:</strong> owner@restaurant.com / password123</div> */}
             </div>
             <div className="mt-2 text-xs text-blue-700">
               <strong>Note:</strong> Ensure backend server is running on localhost:5001
             </div>
           </div>
 
-          <div className="mt-6">
+          {/* <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300" />
@@ -175,7 +187,7 @@ const Login = () => {
               <p><strong>Owner:</strong> owner@hotel.com / password123</p>
               <p><strong>User:</strong> user@hotel.com / password123</p>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

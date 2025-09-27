@@ -1,112 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import toast, { Toaster } from 'react-hot-toast';
-import {
-  ArrowLeft, Save, CheckCircle, AlertTriangle, Building2,
-  MapPin, Phone, Mail, DollarSign, Camera, Upload
-} from 'lucide-react';
-import hotelService from '../services/hotelService';
+import { ArrowLeft, Save, X, MapPin, Phone, Mail, Star, Building, Users, DollarSign } from 'lucide-react';
+import { mockHotels } from '../data/hotelMockData';
 
 const HotelEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [success, setSuccess] = useState(false);
-
+  const [hotel, setHotel] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    category: '',
+    owner: '',
     address: {
       street: '',
       city: '',
       state: '',
       country: '',
-      zipCode: ''
+      zip: ''
     },
     contact: {
       phone: '',
-      email: '',
-      website: ''
+      email: ''
     },
-    pricing: {
-      currency: 'USD',
-      baseRate: '',
-      taxRate: 10,
-      serviceCharge: 0
-    },
+    rating: 1,
+    rooms: 0,
+    priceRange: '',
     amenities: [],
-    facilities: [],
-    policies: {
-      checkIn: '15:00',
-      checkOut: '11:00',
-      cancellation: ''
-    }
+    status: 'Active'
   });
 
-  const hotelCategories = [
-    'Hotel', 'Resort', 'Motel', 'Hostel', 'Apartment', 'Villa',
-    'Boutique Hotel', 'Business Hotel', 'Luxury Hotel', 'Budget Hotel'
-  ];
-
   const availableAmenities = [
-    'WiFi', 'Parking', 'Swimming Pool', 'Gym', 'Spa', 'Restaurant', 
-    'Bar', 'Business Center', 'Airport Shuttle', 'Pet Friendly',
-    'Laundry Service', 'Concierge', 'Air Conditioning', 'Room Service'
+    'WiFi', 'Pool', 'Spa', 'Gym', 'Restaurant', 'Bar', 'Parking', 
+    'Beach Access', 'Business Center', 'Concierge', 'Valet', 
+    'Room Service', 'Laundry', 'Pet Friendly', 'Airport Shuttle',
+    'Conference Rooms', 'Fireplace', 'Kitchen', 'Balcony', 'Ocean View'
   ];
-
-  const loadHotel = async () => {
-    try {
-      setLoading(true);
-      const response = await hotelService.getHotel(id);
-      const hotelData = response.data;
-
-      setFormData({
-        name: hotelData.name || '',
-        description: hotelData.description || '',
-        category: hotelData.category || '',
-        address: {
-          street: hotelData.address?.street || '',
-          city: hotelData.address?.city || '',
-          state: hotelData.address?.state || '',
-          country: hotelData.address?.country || '',
-          zipCode: hotelData.address?.zipCode || ''
-        },
-        contact: {
-          phone: hotelData.contact?.phone || '',
-          email: hotelData.contact?.email || '',
-          website: hotelData.contact?.website || ''
-        },
-        pricing: {
-          currency: hotelData.pricing?.currency || 'USD',
-          baseRate: hotelData.pricing?.baseRate || '',
-          taxRate: hotelData.pricing?.taxRate || 10,
-          serviceCharge: hotelData.pricing?.serviceCharge || 0
-        },
-        amenities: hotelData.amenities || [],
-        facilities: hotelData.facilities || [],
-        policies: {
-          checkIn: hotelData.policies?.checkIn || '15:00',
-          checkOut: hotelData.policies?.checkOut || '11:00',
-          cancellation: hotelData.policies?.cancellation || ''
-        }
-      });
-
-    } catch (err) {
-      console.error('Load hotel error:', err);
-      toast.error('Failed to load hotel details');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    if (id) {
-      loadHotel();
+    // Simulate loading hotel data
+    const hotelData = mockHotels.find(h => h.id === parseInt(id));
+    if (hotelData) {
+      setHotel(hotelData);
+      setFormData({
+        name: hotelData.name,
+        owner: hotelData.owner,
+        address: { ...hotelData.address },
+        contact: { ...hotelData.contact },
+        rating: hotelData.rating,
+        rooms: hotelData.rooms,
+        priceRange: hotelData.priceRange,
+        amenities: [...hotelData.amenities],
+        status: hotelData.status
+      });
     }
+    setLoading(false);
   }, [id]);
 
   const handleInputChange = (field, value) => {
@@ -136,460 +83,331 @@ const HotelEdit = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    try {
-      setSaving(true);
-      
-      const loadingToast = toast.loading('Updating hotel...');
-      
-      const response = await hotelService.updateHotel(id, formData);
-      
-      toast.dismiss(loadingToast);
-      toast.success('Hotel updated successfully!');
-      
-      setSuccess(true);
-      
-      setTimeout(() => {
-        navigate(`/manager/hotels/${id}`);
-      }, 1500);
-      
-    } catch (err) {
-      console.error('Update hotel error:', err);
-      toast.error(err.message || 'Failed to update hotel');
-    } finally {
-      setSaving(false);
+  const handleSave = () => {
+    // Here you would typically send the data to your API
+    console.log('Saving hotel data:', formData);
+    alert('Hotel updated successfully!');
+    navigate('/admin/hotels');
+  };
+
+  const handleCancel = () => {
+    if (window.confirm('Are you sure you want to cancel? All changes will be lost.')) {
+      navigate('/admin/hotels');
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-6">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-              <div className="space-y-3">
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                <div className="h-4 bg-gray-200 rounded w-4/6"></div>
-              </div>
-            </div>
-          </div>
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-lg text-gray-600">Loading hotel data...</div>
+      </div>
+    );
+  }
+
+  if (!hotel) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="text-lg text-red-600 mb-4">Hotel not found</div>
+          <button
+            onClick={() => navigate('/admin/hotels')}
+            className="text-blue-600 hover:text-blue-800"
+          >
+            Back to Hotels
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
-      <Toaster position="top-right" />
-      
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate(`/manager/hotels/${id}`)}
-              className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+    <div className="p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={() => navigate('/admin/hotels')}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            Back to Hotels
+          </button>
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Edit Hotel</h1>
+        <p className="text-gray-600">Update hotel information and settings</p>
+      </div>
+
+      <div className="max-w-4xl mx-auto">
+        {/* Hotel Info Card */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="flex items-center gap-4 mb-4">
+            <Building className="h-8 w-8 text-blue-600" />
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Edit Hotel</h1>
-              <p className="text-gray-600">Update hotel property details</p>
+              <h2 className="text-xl font-semibold text-gray-900">{hotel.name}</h2>
+              <p className="text-gray-600">Hotel ID: #{hotel.id}</p>
             </div>
           </div>
         </div>
 
-        {/* Success Message */}
-        {success && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3"
-          >
-            <CheckCircle className="w-6 h-6 text-green-600" />
+        {/* Edit Form */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
+            {/* Basic Information */}
             <div>
-              <h3 className="font-medium text-green-800">Hotel Updated Successfully!</h3>
-              <p className="text-green-600">Redirecting to hotel details...</p>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Basic Information */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Building2 className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>
-                <p className="text-sm text-gray-600">Hotel name, category, and description</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hotel Name *
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter hotel name"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category *
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => handleInputChange('category', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select category</option>
-                  {hotelCategories.map(category => (
-                    <option key={category} value={category.toLowerCase()}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                placeholder="Describe your hotel..."
-              />
-            </div>
-          </div>
-
-          {/* Location */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <MapPin className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Location</h2>
-                <p className="text-sm text-gray-600">Hotel address and location details</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Street Address *
-                </label>
-                <input
-                  type="text"
-                  value={formData.address.street}
-                  onChange={(e) => handleInputChange('address.street', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter street address"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  City *
-                </label>
-                <input
-                  type="text"
-                  value={formData.address.city}
-                  onChange={(e) => handleInputChange('address.city', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter city"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  State/Province *
-                </label>
-                <input
-                  type="text"
-                  value={formData.address.state}
-                  onChange={(e) => handleInputChange('address.state', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter state/province"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Country *
-                </label>
-                <input
-                  type="text"
-                  value={formData.address.country}
-                  onChange={(e) => handleInputChange('address.country', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter country"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ZIP/Postal Code
-                </label>
-                <input
-                  type="text"
-                  value={formData.address.zipCode}
-                  onChange={(e) => handleInputChange('address.zipCode', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter ZIP code"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Information */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Phone className="w-5 h-5 text-purple-600" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Contact Information</h2>
-                <p className="text-sm text-gray-600">Hotel contact details</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  value={formData.contact.phone}
-                  onChange={(e) => handleInputChange('contact.phone', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter phone number"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  value={formData.contact.email}
-                  onChange={(e) => handleInputChange('contact.email', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter email address"
-                  required
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Website
-                </label>
-                <input
-                  type="url"
-                  value={formData.contact.website}
-                  onChange={(e) => handleInputChange('contact.website', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="https://example.com"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Pricing */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <DollarSign className="w-5 h-5 text-yellow-600" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Pricing</h2>
-                <p className="text-sm text-gray-600">Base rates and charges</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Currency
-                </label>
-                <select
-                  value={formData.pricing.currency}
-                  onChange={(e) => handleInputChange('pricing.currency', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                  <option value="INR">INR</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Base Rate *
-                </label>
-                <input
-                  type="number"
-                  value={formData.pricing.baseRate}
-                  onChange={(e) => handleInputChange('pricing.baseRate', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="0"
-                  min="0"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tax Rate (%)
-                </label>
-                <input
-                  type="number"
-                  value={formData.pricing.taxRate}
-                  onChange={(e) => handleInputChange('pricing.taxRate', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="10"
-                  min="0"
-                  max="100"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Amenities */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-indigo-100 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-indigo-600" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Amenities</h2>
-                <p className="text-sm text-gray-600">Select available amenities</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {availableAmenities.map(amenity => (
-                <label key={amenity} className="flex items-center space-x-3 cursor-pointer">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Hotel Name *
+                  </label>
                   <input
-                    type="checkbox"
-                    checked={formData.amenities.includes(amenity.toLowerCase())}
-                    onChange={() => handleAmenityToggle(amenity.toLowerCase())}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
                   />
-                  <span className="text-sm text-gray-700">{amenity}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Policies */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Policies</h2>
-                <p className="text-sm text-gray-600">Hotel policies and rules</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Owner *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.owner}
+                    onChange={(e) => handleInputChange('owner', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Check-in Time
-                </label>
-                <input
-                  type="time"
-                  value={formData.policies.checkIn}
-                  onChange={(e) => handleInputChange('policies.checkIn', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Check-out Time
-                </label>
-                <input
-                  type="time"
-                  value={formData.policies.checkOut}
-                  onChange={(e) => handleInputChange('policies.checkOut', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cancellation Policy
-                </label>
-                <textarea
-                  value={formData.policies.cancellation}
-                  onChange={(e) => handleInputChange('policies.cancellation', e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  placeholder="Describe your cancellation policy..."
-                />
+            {/* Address Information */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Address Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Street Address *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.address.street}
+                    onChange={(e) => handleInputChange('address.street', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    City *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.address.city}
+                    onChange={(e) => handleInputChange('address.city', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    State/Province *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.address.state}
+                    onChange={(e) => handleInputChange('address.state', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Country *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.address.country}
+                    onChange={(e) => handleInputChange('address.country', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ZIP/Postal Code *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.address.zip}
+                    onChange={(e) => handleInputChange('address.zip', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Submit Buttons */}
-          <div className="flex justify-end gap-4">
-            <button
-              type="button"
-              onClick={() => navigate(`/manager/hotels/${id}`)}
-              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {saving ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Updating...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  Update Hotel
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+            {/* Contact Information */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Phone className="h-5 w-5" />
+                Contact Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.contact.phone}
+                    onChange={(e) => handleInputChange('contact.phone', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.contact.email}
+                    onChange={(e) => handleInputChange('contact.email', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Hotel Details */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Hotel Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <Star className="h-4 w-4" />
+                    Rating *
+                  </label>
+                  <select
+                    value={formData.rating}
+                    onChange={(e) => handleInputChange('rating', parseInt(e.target.value))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value={1}>1 Star</option>
+                    <option value={2}>2 Stars</option>
+                    <option value={3}>3 Stars</option>
+                    <option value={4}>4 Stars</option>
+                    <option value={5}>5 Stars</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Number of Rooms *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formData.rooms}
+                    onChange={(e) => handleInputChange('rooms', parseInt(e.target.value))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Price Range *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g., $100 - $300"
+                    value={formData.priceRange}
+                    onChange={(e) => handleInputChange('priceRange', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Amenities */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Amenities</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {availableAmenities.map((amenity) => (
+                  <label key={amenity} className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.amenities.includes(amenity)}
+                      onChange={() => handleAmenityToggle(amenity)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">{amenity}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Status */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Status</h3>
+              <div className="flex gap-4">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="status"
+                    value="Active"
+                    checked={formData.status === 'Active'}
+                    onChange={(e) => handleInputChange('status', e.target.value)}
+                    className="text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-green-700">Active</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="status"
+                    value="Inactive"
+                    checked={formData.status === 'Inactive'}
+                    onChange={(e) => handleInputChange('status', e.target.value)}
+                    className="text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-red-700">Inactive</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Form Actions */}
+            <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500"
+              >
+                <X className="h-4 w-4" />
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+              >
+                <Save className="h-4 w-4" />
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

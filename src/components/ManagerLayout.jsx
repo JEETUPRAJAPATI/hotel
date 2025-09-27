@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Building2, ChefHat, Users, Calendar, UserCheck, Wrench,
   DollarSign, BarChart3, Settings, LogOut, User, Bell, ChevronLeft, 
-  ChevronRight, X
+  ChevronRight, X, Menu
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -12,7 +12,20 @@ const ManagerLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // Close mobile menu when screen size changes to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/manager/dashboard' },
@@ -35,6 +48,7 @@ const ManagerLayout = ({ children }) => {
   ];
 
   const handleMenuClick = (path) => {
+    setMobileMenuOpen(false); // Close mobile menu when navigating
     window.location.href = path;
   };
 
@@ -45,15 +59,35 @@ const ManagerLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
       <motion.div
         initial={false}
-        animate={{ width: sidebarCollapsed ? '80px' : '280px' }}
+        animate={{ 
+          width: sidebarCollapsed ? '80px' : '320px'
+        }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="bg-white shadow-xl border-r border-gray-200 flex flex-col relative z-20"
+        className={`bg-white shadow-xl border-r border-gray-200 flex flex-col z-50 transition-transform duration-300 ease-in-out
+          ${mobileMenuOpen 
+            ? 'fixed left-0 top-0 h-full translate-x-0 lg:sticky lg:top-0 lg:h-screen' 
+            : 'fixed left-0 top-0 h-full -translate-x-full lg:sticky lg:top-0 lg:h-screen lg:translate-x-0'
+          }
+        `}
       >
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center justify-between">
             {!sidebarCollapsed && (
               <motion.div
@@ -71,21 +105,31 @@ const ManagerLayout = ({ children }) => {
                 </div>
               </motion.div>
             )}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight className="w-5 h-5 text-gray-600" />
-              ) : (
-                <ChevronLeft className="w-5 h-5 text-gray-600" />
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Mobile Close Button */}
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+              {/* Desktop Collapse Button */}
+              <button
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors hidden lg:block"
+              >
+                {sidebarCollapsed ? (
+                  <ChevronRight className="w-5 h-5 text-gray-600" />
+                ) : (
+                  <ChevronLeft className="w-5 h-5 text-gray-600" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 overflow-y-auto p-4 scrollbar-hide">
           <div className="space-y-2">
             {menuItems.map((item) => (
               <button
@@ -114,7 +158,7 @@ const ManagerLayout = ({ children }) => {
         </nav>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 flex-shrink-0">
           {!sidebarCollapsed ? (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
               <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
@@ -148,15 +192,22 @@ const ManagerLayout = ({ children }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
+        <header className="bg-white shadow-sm border-b border-gray-200 px-4 lg:px-6 py-4 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-xl font-semibold text-gray-900">Manager Dashboard</h1>
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden"
+              >
+                <Menu className="w-5 h-5 text-gray-600" />
+              </button>
+              <h1 className="text-lg lg:text-xl font-semibold text-gray-900">Manager Dashboard</h1>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 lg:gap-4">
               {/* Quick Stats */}
-              <div className="hidden lg:flex items-center space-x-4 mr-4">
+              <div className="hidden xl:flex items-center space-x-4 mr-4">
                 <div className="flex items-center px-3 py-2 bg-blue-50 rounded-lg">
                   <Building2 className="h-4 w-4 text-blue-600 mr-2" />
                   <span className="text-sm font-medium text-blue-900">3 Hotels</span>
@@ -230,12 +281,12 @@ const ManagerLayout = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {children}
         </main>
       </div>
 
-      {/* Overlay for mobile */}
+      {/* Notification Overlay for mobile */}
       {showNotifications && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"

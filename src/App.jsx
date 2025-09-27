@@ -1,5 +1,6 @@
 import React from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import { useAuth } from './context/AuthContext'
 import Header from './components/Header'
 import LoadingSpinner from './components/LoadingSpinner'
@@ -9,6 +10,8 @@ import ManagerLayout from './components/ManagerLayout'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import AdminDashboard from './pages/AdminDashboard'
 import HotelManagement from './pages/HotelManagement'
 import HotelEdit from './pages/HotelEdit'
@@ -24,6 +27,16 @@ import MenuManagement from './pages/MenuManagement'
 import OrdersManagement from './pages/OrdersManagement'
 import KitchenDisplay from './pages/KitchenDisplay'
 import POSSystem from './pages/POSSystem'
+
+// Agent Components
+import AgentManagement from './pages/AgentManagement'
+import AgentCreateEdit from './pages/AgentCreateEdit'
+import AgentDetails from './pages/AgentDetails'
+
+// Staff Components
+import StaffManagement from './pages/StaffManagement'
+import DepartmentManagement from './pages/DepartmentManagement'
+import AttendanceManagement from './pages/AttendanceManagement'
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [], redirectTo = "/login" }) => {
@@ -198,6 +211,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:resettoken" element={<ResetPassword />} />
           
           {/* Protected Routes */}
           <Route
@@ -392,7 +407,37 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
                 <ManagerLayout>
-                  <div className="p-6"><h1 className="text-2xl font-bold">Agent Management</h1><p className="text-gray-600 mt-2">Coming Soon...</p></div>
+                  <AgentManagement />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manager/agents/add"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <AgentCreateEdit />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manager/agents/:id/edit"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <AgentCreateEdit />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manager/agents/:id"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <AgentDetails />
                 </ManagerLayout>
               </ProtectedRoute>
             }
@@ -404,7 +449,29 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
                 <ManagerLayout>
-                  <div className="p-6"><h1 className="text-2xl font-bold">Staff Management</h1><p className="text-gray-600 mt-2">Coming Soon...</p></div>
+                  <StaffManagement />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/manager/departments"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <DepartmentManagement />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/manager/attendance"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <AttendanceManagement />
                 </ManagerLayout>
               </ProtectedRoute>
             }
@@ -573,6 +640,32 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
+      
+      {/* Toast Notifications */}
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        gutter={8}
+        containerClassName=""
+        containerStyle={{}}
+        toastOptions={{
+          // Define default options
+          className: '',
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          // Default options for specific types
+          success: {
+            duration: 3000,
+            theme: {
+              primary: 'green',
+              secondary: 'black',
+            },
+          },
+        }}
+      />
     </div>
   )
 }

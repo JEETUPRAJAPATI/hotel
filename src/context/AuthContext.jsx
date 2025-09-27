@@ -3,13 +3,10 @@ import * as authService from '../services/authService'
 
 const AuthContext = createContext()
 
-// Export AuthContext for direct usage
-export { AuthContext }
-
 const initialState = {
   user: null,
   token: localStorage.getItem('token'),
-  isAuthenticated: false,
+  isAuthenticated: !!localStorage.getItem('token'),
   loading: true,
 }
 
@@ -21,6 +18,7 @@ const authReducer = (state, action) => {
         isAuthenticated: true,
         loading: false,
         user: action.payload,
+        error: null,
       }
     case 'LOGIN_SUCCESS':
     case 'REGISTER_SUCCESS':
@@ -132,11 +130,24 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    if (token) {
-      console.log('Token found, loading user...')
-      loadUser()
+    const userData = localStorage.getItem('user')
+    
+    if (token && userData) {
+      try {
+        const user = JSON.parse(userData)
+        console.log('Token and user data found, loading user:', user)
+        dispatch({
+          type: 'USER_LOADED',
+          payload: user,
+        })
+      } catch (error) {
+        console.error('Error parsing user data:', error)
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        dispatch({ type: 'AUTH_ERROR' })
+      }
     } else {
-      console.log('No token found, setting auth error')
+      console.log('No token or user data found, setting auth error')
       dispatch({ type: 'AUTH_ERROR' })
     }
   }, [])
