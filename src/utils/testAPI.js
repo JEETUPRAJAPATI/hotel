@@ -1,7 +1,8 @@
 // Test API connectivity
 const testAPI = async () => {
   try {
-    const response = await fetch('https://hotel-backend-wh9t.onrender.com/api/auth/test')
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://hotel-backend-e4cv.onrender.com/api'
+    const response = await fetch(`${apiUrl}/auth/test`)
     console.log('API Test Response:', response.status)
     const data = await response.json()
     console.log('API Test Data:', data)

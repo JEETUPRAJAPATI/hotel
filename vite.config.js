@@ -8,7 +8,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://hotel-backend-wh9t.onrender.com',
+        target: process.env.VITE_API_URL || 'https://hotel-backend-e4cv.onrender.com/api',
         changeOrigin: true,
         secure: false,
       },

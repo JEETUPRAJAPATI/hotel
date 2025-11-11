@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = 'https://hotel-backend-wh9t.onrender.com/api'
+const API_URL = import.meta.env.VITE_API_URL || 'https://hotel-backend-e4cv.onrender.com/api'
 
 // Create axios instance
 const api = axios.create({
