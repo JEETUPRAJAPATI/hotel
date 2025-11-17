@@ -48,6 +48,8 @@ const ManagerDashboard = () => {
     monthlyRevenue: 1234567,
     activeReservations: 89
   });
+  
+  const [showCredentials, setShowCredentials] = useState(false);
 
   const [alerts] = useState([
     { id: 1, type: 'warning', message: 'Room 204 - Grand Hotel needs maintenance', time: '2 hours ago' },
@@ -87,7 +89,7 @@ const ManagerDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8 px-4 lg:px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8 px-4 lg:px-6">
           <StatCard
             title="Total Hotels"
             value={stats.totalHotels}
@@ -118,7 +120,7 @@ const ManagerDashboard = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8 px-4 lg:px-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8 px-4 lg:px-6">
           {/* Hotel Performance */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -205,7 +207,7 @@ const ManagerDashboard = () => {
           </motion.div>
         </div>
 
-        {/* Recent Orders */}
+        {/* Recent Restaurant Orders */}
         <div className="px-4 lg:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -248,6 +250,54 @@ const ManagerDashboard = () => {
           </motion.div>
         </div>
 
+        {/* Demo Credentials */}
+        <div className="px-4 lg:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg shadow-md p-4 lg:p-6 mb-6 lg:mb-8 border border-blue-200"
+          >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base lg:text-lg font-semibold text-gray-900">Demo Credentials</h3>
+            <button 
+              onClick={() => setShowCredentials(!showCredentials)}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              {showCredentials ? 'Hide' : 'Show'} Credentials
+            </button>
+          </div>
+          {showCredentials && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 text-sm">
+              <div className="bg-white p-3 rounded-lg border">
+                <h4 className="font-semibold text-blue-600 mb-2">Admin</h4>
+                <p><strong>Email:</strong> admin@hotel.com</p>
+                <p><strong>Password:</strong> password123</p>
+              </div>
+              <div className="bg-white p-3 rounded-lg border">
+                <h4 className="font-semibold text-green-600 mb-2">Manager</h4>
+                <p><strong>Email:</strong> manager@hotel.com</p>
+                <p><strong>Password:</strong> password123</p>
+              </div>
+              <div className="bg-white p-3 rounded-lg border">
+                <h4 className="font-semibold text-purple-600 mb-2">Staff</h4>
+                <p><strong>Email:</strong> staff@hotel.com</p>
+                <p><strong>Password:</strong> password123</p>
+              </div>
+              <div className="bg-white p-3 rounded-lg border">
+                <h4 className="font-semibold text-indigo-600 mb-2">Hotel Owner</h4>
+                <p><strong>Email:</strong> owner@hotel.com</p>
+                <p><strong>Password:</strong> password123</p>
+              </div>
+              <div className="bg-white p-3 rounded-lg border">
+                <h4 className="font-semibold text-orange-600 mb-2">Restaurant Owner</h4>
+                <p><strong>Email:</strong> restaurant@hotel.com</p>
+                <p><strong>Password:</strong> password123</p>
+              </div>
+            </div>
+          )}
+          </motion.div>
+        </div>
+
         {/* Quick Actions */}
         <div className="px-4 lg:px-6">
           <motion.div
@@ -256,22 +306,30 @@ const ManagerDashboard = () => {
             className="bg-white rounded-lg shadow-md p-4 lg:p-6"
           >
           <h3 className="text-base lg:text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-            <button className="flex flex-col sm:flex-row items-center justify-center p-3 lg:p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition duration-200">
+          <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3 lg:gap-4">
+            <button className="flex flex-col sm:flex-row items-center justify-center p-3 lg:p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition duration-200 hover:scale-105 transform">
               <Building2 className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
               <span className="text-xs lg:text-sm font-medium">Add Hotel</span>
             </button>
-            <button className="flex flex-col sm:flex-row items-center justify-center p-3 lg:p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition duration-200">
+            <button className="flex flex-col sm:flex-row items-center justify-center p-3 lg:p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition duration-200 hover:scale-105 transform">
               <ChefHat className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
               <span className="text-xs lg:text-sm font-medium">Add Restaurant</span>
             </button>
-            <button className="flex flex-col sm:flex-row items-center justify-center p-3 lg:p-4 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition duration-200">
+            <button className="flex flex-col sm:flex-row items-center justify-center p-3 lg:p-4 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition duration-200 hover:scale-105 transform">
               <Users className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
               <span className="text-xs lg:text-sm font-medium">Add Staff</span>
             </button>
-            <button className="flex flex-col sm:flex-row items-center justify-center p-3 lg:p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition duration-200">
+            <button className="flex flex-col sm:flex-row items-center justify-center p-3 lg:p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition duration-200 hover:scale-105 transform">
               <PieChart className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
               <span className="text-xs lg:text-sm font-medium">View Reports</span>
+            </button>
+            <button className="flex flex-col sm:flex-row items-center justify-center p-3 lg:p-4 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition duration-200 hover:scale-105 transform">
+              <Calendar className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
+              <span className="text-xs lg:text-sm font-medium">Check Bookings</span>
+            </button>
+            <button className="flex flex-col sm:flex-row items-center justify-center p-3 lg:p-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition duration-200 hover:scale-105 transform">
+              <BarChart3 className="h-5 w-5 mb-1 sm:mb-0 sm:mr-2" />
+              <span className="text-xs lg:text-sm font-medium">Analytics</span>
             </button>
           </div>
           </motion.div>

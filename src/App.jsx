@@ -34,9 +34,30 @@ import AgentCreateEdit from './pages/AgentCreateEdit'
 import AgentDetails from './pages/AgentDetails'
 
 // Staff Components
-import StaffManagement from './pages/StaffManagement'
+import StaffManagement from './pages/manager/StaffManagement'
 import DepartmentManagement from './pages/DepartmentManagement'
 import AttendanceManagement from './pages/AttendanceManagement'
+
+// Restaurant Management Components
+import RestaurantManagement from './pages/RestaurantManagement'
+
+// Owner Components
+import { 
+  OwnerLayout, 
+  OwnerDashboard as OwnerDashboardPage, 
+  HotelsList, 
+  CreateHotel,
+  HotelDetails,
+  RestaurantsList,
+  FinanceOverview,
+  StaffList,
+  ReportsList,
+  OwnerSettings
+} from './pages/owner'
+import Agents from './pages/owner/Agents'
+import Reservations from './pages/owner/Reservations'
+import FrontOffice from './pages/owner/FrontOffice'
+import Housekeeping from './pages/owner/Housekeeping'
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [], redirectTo = "/login" }) => {
@@ -75,7 +96,7 @@ const Dashboard = () => {
     case 'staff':
       return <Navigate to="/staff" replace />
     case 'owner':
-      return <Navigate to="/owner" replace />
+      return <Navigate to="/owner/dashboard" replace />
     case 'restaurant_owner':
       return <Navigate to="/restaurant/dashboard" replace />
     default:
@@ -128,28 +149,11 @@ const StaffDashboard = () => (
   </div>
 )
 
-const OwnerDashboard = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="text-center max-w-2xl mx-auto p-8">
-      <div className="bg-yellow-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-        <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      </div>
-      <h2 className="text-3xl font-bold text-gray-900 mb-4">Owner Dashboard</h2>
-      <p className="text-gray-600 mb-8">Manage your property, pricing, and revenue</p>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="font-semibold text-gray-900 mb-2">Revenue Analytics</h3>
-          <p className="text-gray-600 text-sm">Track your property performance</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="font-semibold text-gray-900 mb-2">Pricing Control</h3>
-          <p className="text-gray-600 text-sm">Manage room rates and packages</p>
-        </div>
-      </div>
-    </div>
-  </div>
+// Owner Dashboard Wrapper
+const OwnerDashboardWrapper = () => (
+  <OwnerLayout>
+    <OwnerDashboardPage />
+  </OwnerLayout>
 )
 
 const Unauthorized = () => (
@@ -238,7 +242,9 @@ function App() {
             path="/admin"
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
-                <AdminDashboard />
+                <AdminLayout>
+                  <AdminDashboard />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />
@@ -371,9 +377,9 @@ function App() {
           <Route
             path="/manager/restaurants"
             element={
-              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager', 'owner']}>
                 <ManagerLayout>
-                  <div className="p-6"><h1 className="text-2xl font-bold">Restaurant List</h1><p className="text-gray-600 mt-2">Coming Soon...</p></div>
+                  <RestaurantManagement />
                 </ManagerLayout>
               </ProtectedRoute>
             }
@@ -492,11 +498,211 @@ function App() {
             }
           />
           
+          {/* Owner Routes */}
           <Route
             path="/owner"
+            element={<Navigate to="/owner/dashboard" replace />}
+          />
+          
+          <Route
+            path="/owner/dashboard"
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
-                <OwnerDashboard />
+                <OwnerDashboardWrapper />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Owner Hotel Management */}
+          <Route
+            path="/owner/hotels"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <HotelsList />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Owner Restaurant Management */}
+          <Route
+            path="/owner/restaurants"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <RestaurantsList />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Other Owner Routes */}
+          <Route
+            path="/owner/agents"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <Agents />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/reservations"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <Reservations />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/front-office"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <FrontOffice />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/housekeeping"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <Housekeeping />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/reports"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <div className="p-6"><h1>Reports - Coming Soon</h1></div>
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/settings"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <div className="p-6"><h1>Settings - Coming Soon</h1></div>
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/hotels/create"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <CreateHotel />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/hotels/:id"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <HotelDetails />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Owner Finance */}
+          <Route
+            path="/owner/finance"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <FinanceOverview />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Owner Staff Management */}
+          <Route
+            path="/owner/staff"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <StaffList />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Owner Reports */}
+          <Route
+            path="/owner/reports"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <ReportsList />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Owner Settings */}
+          <Route
+            path="/owner/settings"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <OwnerSettings />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/settings/profile"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <OwnerSettings />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/settings/security"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <OwnerSettings />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/settings/notifications"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <OwnerSettings />
+                </OwnerLayout>
               </ProtectedRoute>
             }
           />

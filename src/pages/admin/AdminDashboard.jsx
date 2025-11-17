@@ -9,6 +9,7 @@ import {
   UserPlus, Building, Star, Activity, Settings, Bell
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import AdminLayout from '../components/AdminLayout'
 
 const StatCard = ({ title, value, change, icon: Icon, color = "primary" }) => {
   const colorClasses = {
@@ -24,7 +25,7 @@ const StatCard = ({ title, value, change, icon: Icon, color = "primary" }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100"
+      className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100"
     >
       <div className="flex items-center justify-between">
         <div>
@@ -39,8 +40,8 @@ const StatCard = ({ title, value, change, icon: Icon, color = "primary" }) => {
             </p>
           )}
         </div>
-        <div className={`p-3 rounded-xl border-2 ${colorClasses[color]}`}>
-          <Icon className="w-6 h-6" />
+        <div className={`p-4 rounded-2xl border-2 ${colorClasses[color]}`}>
+          <Icon className="w-8 h-8" />
         </div>
       </div>
     </motion.div>
@@ -52,9 +53,9 @@ const ChartCard = ({ title, children, className = "" }) => (
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
-    className={`bg-white rounded-xl p-4 shadow-sm border border-gray-100 ${className}`}
+    className={`bg-white rounded-2xl p-6 shadow-lg border border-gray-100 ${className}`}
   >
-    <h3 className="text-base font-semibold text-gray-900 mb-3">{title}</h3>
+    <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
     {children}
   </motion.div>
 )
@@ -118,10 +119,10 @@ const AdminDashboard = () => {
   }
 
   return (
-    <>
-      <div className="w-full px-6 py-6">
+    <AdminLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -161,7 +162,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
             title="Total Hotels"
             value="150"
@@ -193,7 +194,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Secondary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard
             title="Occupancy Rate"
             value="75%"
@@ -218,10 +219,10 @@ const AdminDashboard = () => {
         </div>
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Revenue Chart */}
           <ChartCard title="Revenue & Bookings Overview">
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={dashboardData.revenueData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
@@ -244,19 +245,27 @@ const AdminDashboard = () => {
                   fillOpacity={0.6}
                   name="Revenue"
                 />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="bookings"
+                  stroke="#10B981"
+                  strokeWidth={3}
+                  name="Bookings"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </ChartCard>
 
           {/* Booking Channels */}
           <ChartCard title="Booking Channels">
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={dashboardData.occupancyData}
                   cx="50%"
                   cy="50%"
-                                    outerRadius={80}
+                  outerRadius={100}
                   dataKey="value"
                   label={({ name, value }) => `${name}: ${value}%`}
                 >
@@ -271,9 +280,9 @@ const AdminDashboard = () => {
         </div>
 
         {/* Room Types Chart */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <ChartCard title="Room Occupancy by Type" className="lg:col-span-2">
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={300}>
               <BarChart data={dashboardData.roomTypeData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="type" />
@@ -314,7 +323,7 @@ const AdminDashboard = () => {
 
         {/* Quick Actions */}
         <ChartCard title="Quick Actions">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {[
               { icon: Hotel, label: 'Add Hotel', color: 'bg-blue-500' },
               { icon: Bed, label: 'Add Room', color: 'bg-green-500' },
@@ -327,18 +336,18 @@ const AdminDashboard = () => {
                 key={index}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex flex-col items-center gap-1 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-50 transition-colors"
               >
-                <div className={`p-2 rounded-lg text-white ${action.color}`}>
-                  <action.icon className="w-5 h-5" />
+                <div className={`p-3 rounded-xl text-white ${action.color}`}>
+                  <action.icon className="w-6 h-6" />
                 </div>
-                <span className="text-xs font-medium text-gray-700">{action.label}</span>
+                <span className="text-sm font-medium text-gray-700">{action.label}</span>
               </motion.button>
             ))}
           </div>
         </ChartCard>
-      </div>
-    </>
+        </div>
+    </AdminLayout>
   )
 }
 
