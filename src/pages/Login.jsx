@@ -153,17 +153,16 @@ const Login = () => {
           </form>
 
           {/* Demo Credentials Section */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          {/* <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <h3 className="text-sm font-medium text-blue-900 mb-2">Demo Credentials</h3>
             <div className="space-y-1 text-xs text-blue-800">
               <div><strong>Admin:</strong> admin@hotel.com / password123</div>
               <div><strong>Hotel Owner:</strong> manager@hotel.com / password123</div>
-              <div><strong>Restaurant Owner:</strong> owner@restaurant.com / password123</div>
             </div>
             <div className="mt-2 text-xs text-blue-700">
               <strong>Note:</strong> Ensure backend server is running on localhost:5001
             </div>
-          </div>
+          </div> */}
 
        <div className="mt-6">
             <div className="relative">
@@ -180,7 +179,7 @@ const Login = () => {
               <p><strong>Manager:</strong> manager@hotel.com / password123</p>
               <p><strong>Staff:</strong> staff@hotel.com / password123</p>
               <p><strong>Owner:</strong> owner@hotel.com / password123</p>
-              <p><strong>User:</strong> user@hotel.com / password123</p>
+              <div><strong>Restaurant Owner:</strong> owner@restaurant.com / password123</div>
             </div>
           </div>
         </div>

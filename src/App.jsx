@@ -38,6 +38,11 @@ import StaffManagement from './pages/manager/StaffManagement'
 import DepartmentManagement from './pages/DepartmentManagement'
 import AttendanceManagement from './pages/AttendanceManagement'
 
+// Manager Components
+import Reports from './pages/manager/Reports'
+import Finance from './pages/manager/Finance'
+import ManagerHousekeeping from './pages/manager/Housekeeping'
+
 // Restaurant Management Components
 import RestaurantManagement from './pages/RestaurantManagement'
 
@@ -54,10 +59,25 @@ import {
   ReportsList,
   OwnerSettings
 } from './pages/owner'
+import CreateRestaurant from './pages/owner/restaurants/CreateRestaurant'
+import EditRestaurant from './pages/owner/restaurants/EditRestaurant'
+import ViewRestaurant from './pages/owner/restaurants/ViewRestaurant'
 import Agents from './pages/owner/Agents'
-import Reservations from './pages/owner/Reservations'
+import CreateAgent from './pages/owner/agents/CreateAgent'
+import EditAgent from './pages/owner/agents/EditAgent'
+import Reservations from './pages/owner/reservations/Reservations'
+import CreateReservation from './pages/owner/reservations/CreateReservation'
+import EditReservation from './pages/owner/reservations/EditReservation'
 import FrontOffice from './pages/owner/FrontOffice'
-import Housekeeping from './pages/owner/Housekeeping'
+import OwnerHousekeeping from './pages/owner/Housekeeping'
+
+// Owner Staff Management Components
+import OwnerStaffList from './pages/owner/staff/OwnerStaffList'
+import CreateStaff from './pages/owner/staff/CreateStaff'
+import StaffAttendance from './pages/owner/staff/StaffAttendance'
+
+// Owner Reports Components
+import OwnerReports from './pages/owner/reports/Reports'
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [], redirectTo = "/login" }) => {
@@ -483,6 +503,40 @@ function App() {
             }
           />
           
+          {/* Manager Reports, Finance, and Housekeeping Routes */}
+          <Route
+            path="/manager/reports"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <Reports />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/manager/finance"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <Finance />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/manager/housekeeping"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <ManagerHousekeeping />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
           {/* Legacy route redirect */}
           <Route
             path="/manager"
@@ -537,6 +591,39 @@ function App() {
             }
           />
           
+          <Route
+            path="/owner/restaurants/create"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <CreateRestaurant />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/restaurants/:id"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <ViewRestaurant />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/restaurants/:id/edit"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <EditRestaurant />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
           {/* Other Owner Routes */}
           <Route
             path="/owner/agents"
@@ -550,11 +637,55 @@ function App() {
           />
           
           <Route
+            path="/owner/agents/create"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <CreateAgent />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/agents/edit/:id"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <EditAgent />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
             path="/owner/reservations"
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
                 <OwnerLayout>
                   <Reservations />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/reservations/create"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <CreateReservation />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/reservations/edit/:id"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <EditReservation />
                 </OwnerLayout>
               </ProtectedRoute>
             }
@@ -576,7 +707,7 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
                 <OwnerLayout>
-                  <Housekeeping />
+                  <OwnerHousekeeping />
                 </OwnerLayout>
               </ProtectedRoute>
             }
@@ -587,7 +718,7 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
                 <OwnerLayout>
-                  <div className="p-6"><h1>Reports - Coming Soon</h1></div>
+                  <OwnerReports />
                 </OwnerLayout>
               </ProtectedRoute>
             }
@@ -598,7 +729,7 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
                 <OwnerLayout>
-                  <div className="p-6"><h1>Settings - Coming Soon</h1></div>
+                  <OwnerSettings />
                 </OwnerLayout>
               </ProtectedRoute>
             }
@@ -644,7 +775,29 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
                 <OwnerLayout>
-                  <StaffList />
+                  <OwnerStaffList />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/staff/create"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <CreateStaff />
+                </OwnerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/owner/staff/attendance"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
+                <OwnerLayout>
+                  <StaffAttendance />
                 </OwnerLayout>
               </ProtectedRoute>
             }
@@ -656,7 +809,7 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['super_admin', 'owner']}>
                 <OwnerLayout>
-                  <ReportsList />
+                  <OwnerReports />
                 </OwnerLayout>
               </ProtectedRoute>
             }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Building2, ChefHat, Users, Calendar, UserCheck, Wrench,
@@ -11,6 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 const OwnerLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -33,7 +34,7 @@ const OwnerLayout = ({ children }) => {
     { id: 'restaurants', label: 'Restaurant Management', icon: ChefHat, path: '/owner/restaurants' },
     { id: 'agents', label: 'Agent Management', icon: Users, path: '/owner/agents' },
     { id: 'reservations', label: 'Reservations', icon: Calendar, path: '/owner/reservations' },
-    { id: 'frontOffice', label: 'Front Office', icon: UserCheck, path: '/owner/front-office' },
+    // { id: 'frontOffice', label: 'Front Office', icon: UserCheck, path: '/owner/front-office' },
     { id: 'housekeeping', label: 'Housekeeping', icon: Wrench, path: '/owner/housekeeping' },
     { id: 'finance', label: 'Finance & Accounts', icon: DollarSign, path: '/owner/finance' },
     { id: 'reports', label: 'Reports', icon: BarChart3, path: '/owner/reports' },
@@ -49,7 +50,7 @@ const OwnerLayout = ({ children }) => {
 
   const handleMenuClick = (path) => {
     setMobileMenuOpen(false);
-    window.location.href = path;
+    navigate(path);
   };
 
   const toggleSidebar = () => {
