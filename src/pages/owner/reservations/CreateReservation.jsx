@@ -16,7 +16,10 @@ import {
   DollarSign,
   Bed,
   Clock,
-  UserPlus
+  UserPlus,
+  Home,
+  Star,
+  Plane
 } from 'lucide-react';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -53,6 +56,14 @@ const CreateReservation = () => {
     taxes: '',
     total_amount: '',
     
+    // Room Details
+    room_view: '',
+    bed_type: '',
+    room_floor: '',
+    room_size: '',
+    room_amenities: [],
+    room_notes: '',
+    
     // Payment & Deposit
     deposit_amount: '',
     payment_method: 'cash',
@@ -61,7 +72,61 @@ const CreateReservation = () => {
     // Additional
     source: 'direct',
     assigned_to: '',
-    notes: ''
+    notes: '',
+    
+    // General Information
+    reservation_status: 'confirmed',
+    priority_level: 'normal',
+    guest_category: 'regular',
+    booking_reference: '',
+    arrival_time: '',
+    departure_time: '',
+    marketing_source: '',
+    communication_preference: 'email',
+    
+    // Payment Information
+    billing_name: '',
+    billing_address: '',
+    billing_city: '',
+    billing_state: '',
+    billing_country: 'India',
+    billing_postal: '',
+    card_number: '',
+    card_expiry: '',
+    card_cvv: '',
+    card_holder_name: '',
+    
+    // Special Requests
+    dietary_preferences: '',
+    accessibility_needs: '',
+    bed_preference: '',
+    room_location_preference: '',
+    arrival_instructions: '',
+    
+    // Additional Services
+    airport_transfer: false,
+    airport_transfer_type: '',
+    flight_details: '',
+    spa_services: false,
+    spa_package: '',
+    restaurant_booking: false,
+    restaurant_preference: '',
+    laundry_service: false,
+    tour_packages: false,
+    
+    // Emergency Contact
+    emergency_name: '',
+    emergency_relationship: '',
+    emergency_phone: '',
+    emergency_email: '',
+    
+    // Company Information
+    is_corporate: false,
+    company_name: '',
+    company_gst: '',
+    company_address: '',
+    company_contact_person: '',
+    company_email: ''
   });
   
   const [loading, setSaving] = useState(false);
@@ -265,26 +330,26 @@ const CreateReservation = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6">
           {/* Section 1: Guest Information */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8"
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
           >
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-blue-50 rounded-lg">
                 <Users className="w-5 h-5 text-blue-600" />
               </div>
               <h2 className="text-xl font-semibold text-gray-900">Guest Information</h2>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Guest Type Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Guest Type
                 </label>
                 <div className="flex gap-4">
@@ -701,10 +766,320 @@ const CreateReservation = () => {
               </div>
             </div>
           </motion.div>
+
+          {/* Section 4: Room Details */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8"
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-indigo-50 rounded-lg">
+                <Home className="w-5 h-5 text-indigo-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Room Details</h2>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Room View
+                  </label>
+                  <select
+                    name="room_view"
+                    value={formData.room_view || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">Select room view</option>
+                    <option value="city">City View</option>
+                    <option value="garden">Garden View</option>
+                    <option value="pool">Pool View</option>
+                    <option value="mountain">Mountain View</option>
+                    <option value="ocean">Ocean View</option>
+                    <option value="courtyard">Courtyard View</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bed Type
+                  </label>
+                  <select
+                    name="bed_type"
+                    value={formData.bed_type || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">Select bed type</option>
+                    <option value="single">Single Bed</option>
+                    <option value="twin">Twin Beds</option>
+                    <option value="double">Double Bed</option>
+                    <option value="queen">Queen Bed</option>
+                    <option value="king">King Bed</option>
+                    <option value="sofa_bed">Sofa Bed</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Room Floor
+                  </label>
+                  <select
+                    name="room_floor"
+                    value={formData.room_floor || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">Select floor</option>
+                    <option value="ground">Ground Floor</option>
+                    <option value="1">1st Floor</option>
+                    <option value="2">2nd Floor</option>
+                    <option value="3">3rd Floor</option>
+                    <option value="4">4th Floor</option>
+                    <option value="5">5th Floor</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Room Size (sq ft)
+                  </label>
+                  <input
+                    type="number"
+                    name="room_size"
+                    value={formData.room_size || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Enter room size"
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Room Amenities
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    'Wi-Fi', 'Air Conditioning', 'TV', 'Mini Bar', 'Safe', 'Balcony',
+                    'Room Service', 'Coffee Maker', 'Iron & Board', 'Hair Dryer',
+                    'Bathtub', 'Work Desk'
+                  ].map(amenity => (
+                    <label key={amenity} className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.room_amenities?.includes(amenity) || false}
+                        onChange={(e) => {
+                          const amenities = formData.room_amenities || [];
+                          if (e.target.checked) {
+                            setFormData(prev => ({
+                              ...prev,
+                              room_amenities: [...amenities, amenity]
+                            }));
+                          } else {
+                            setFormData(prev => ({
+                              ...prev,
+                              room_amenities: amenities.filter(a => a !== amenity)
+                            }));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{amenity}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Additional Room Notes
+                </label>
+                <textarea
+                  name="room_notes"
+                  value={formData.room_notes || ''}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                  placeholder="Any specific room requirements or notes"
+                />
+              </div>
+            </div>
+          </motion.div>
+
+               {/* Booking Settings & Details */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200"
+          >
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-blue-600" />
+                Booking Settings & Details
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Reservation Status
+                    </label>
+                    <select
+                      name="reservation_status"
+                      value={formData.reservation_status || 'confirmed'}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="confirmed">Confirmed</option>
+                      <option value="pending">Pending</option>
+                      <option value="waitlist">Waitlist</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Priority Level
+                    </label>
+                    <select
+                      name="priority_level"
+                      value={formData.priority_level || 'normal'}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="low">Low Priority</option>
+                      <option value="normal">Normal Priority</option>
+                      <option value="high">High Priority</option>
+                      <option value="vip">VIP</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Guest Category
+                    </label>
+                    <select
+                      name="guest_category"
+                      value={formData.guest_category || 'regular'}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="regular">Regular Guest</option>
+                      <option value="corporate">Corporate</option>
+                      <option value="group">Group Booking</option>
+                      <option value="loyalty">Loyalty Member</option>
+                      <option value="travel_agent">Travel Agent</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Booking Source
+                    </label>
+                    <select
+                      name="source"
+                      value={formData.source}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="direct">Direct Booking</option>
+                      <option value="online">Online Platform</option>
+                      <option value="phone">Phone Booking</option>
+                      <option value="agent">Travel Agent</option>
+                      <option value="corporate">Corporate Booking</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Arrival Time
+                    </label>
+                    <input
+                      type="time"
+                      name="arrival_time"
+                      value={formData.arrival_time || ''}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Departure Time
+                    </label>
+                    <input
+                      type="time"
+                      name="departure_time"
+                      value={formData.departure_time || ''}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Assigned Staff
+                    </label>
+                    <select
+                      name="assigned_to"
+                      value={formData.assigned_to}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">Select staff member</option>
+                      {mockStaff.map(staff => (
+                        <option key={staff.id} value={staff.id}>
+                          {staff.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Communication Preference
+                    </label>
+                    <select
+                      name="communication_preference"
+                      value={formData.communication_preference || 'email'}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="email">Email</option>
+                      <option value="phone">Phone</option>
+                      <option value="sms">SMS</option>
+                      <option value="whatsapp">WhatsApp</option>
+                      <option value="no_contact">No Contact</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Internal Notes
+                  </label>
+                  <textarea
+                    name="notes"
+                    value={formData.notes}
+                    onChange={handleInputChange}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                    placeholder="Internal notes for staff members"
+                  />
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Right Column - Summary & Actions */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Reservation Summary */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -839,6 +1214,702 @@ const CreateReservation = () => {
               </div>
             </div>
           </motion.div>
+          
+          {/* Payment Information */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200"
+          >
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-blue-600" />
+                Payment Information
+              </h2>
+              
+              <div className="space-y-6">
+                {/* Payment Method Selection */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900">Payment Method</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {['cash', 'card', 'upi'].map((method) => (
+                      <div
+                        key={method}
+                        className={`relative p-4 border-2 rounded-xl cursor-pointer transition-colors ${
+                          formData.payment_method === method
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setFormData(prev => ({ ...prev, payment_method: method }))}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-4 h-4 rounded-full border-2 ${
+                            formData.payment_method === method
+                              ? 'border-blue-500 bg-blue-500'
+                              : 'border-gray-300'
+                          }`}>
+                            {formData.payment_method === method && (
+                              <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                            )}
+                          </div>
+                          <span className="font-medium capitalize text-gray-900">{method === 'upi' ? 'UPI' : method}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card Details - Show only if card is selected */}
+                {formData.payment_method === 'card' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="space-y-4"
+                  >
+                    <h3 className="text-lg font-medium text-gray-900">Card Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Card Holder Name
+                        </label>
+                        <input
+                          type="text"
+                          name="card_holder_name"
+                          value={formData.card_holder_name}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          placeholder="Name on card"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Card Number
+                        </label>
+                        <input
+                          type="text"
+                          name="card_number"
+                          value={formData.card_number}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          placeholder="1234 5678 9012 3456"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Expiry Date
+                        </label>
+                        <input
+                          type="text"
+                          name="card_expiry"
+                          value={formData.card_expiry}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          placeholder="MM/YY"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          CVV
+                        </label>
+                        <input
+                          type="text"
+                          name="card_cvv"
+                          value={formData.card_cvv}
+                          onChange={handleInputChange}
+                          maxLength={4}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          placeholder="123"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Billing Address */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900">Billing Address</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        name="billing_name"
+                        value={formData.billing_name}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="Billing name"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Address
+                      </label>
+                      <input
+                        type="text"
+                        name="billing_address"
+                        value={formData.billing_address}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="Street address"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        name="billing_city"
+                        value={formData.billing_city}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="City"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        State
+                      </label>
+                      <input
+                        type="text"
+                        name="billing_state"
+                        value={formData.billing_state}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="State"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Country
+                      </label>
+                      <select
+                        name="billing_country"
+                        value={formData.billing_country}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      >
+                        <option value="India">India</option>
+                        <option value="USA">United States</option>
+                        <option value="UK">United Kingdom</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Australia">Australia</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Postal Code
+                      </label>
+                      <input
+                        type="text"
+                        name="billing_postal"
+                        value={formData.billing_postal}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="Postal code"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+          
+          {/* Special Requests */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200"
+          >
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <Star className="w-5 h-5 text-blue-600" />
+                Special Requests & Preferences
+              </h2>
+              
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Dietary Preferences
+                    </label>
+                    <select
+                      name="dietary_preferences"
+                      value={formData.dietary_preferences}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">None specified</option>
+                      <option value="vegetarian">Vegetarian</option>
+                      <option value="vegan">Vegan</option>
+                      <option value="gluten-free">Gluten Free</option>
+                      <option value="halal">Halal</option>
+                      <option value="kosher">Kosher</option>
+                      <option value="diabetic">Diabetic Friendly</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bed Preference
+                    </label>
+                    <select
+                      name="bed_preference"
+                      value={formData.bed_preference}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">No preference</option>
+                      <option value="king">King Bed</option>
+                      <option value="queen">Queen Bed</option>
+                      <option value="twin">Twin Beds</option>
+                      <option value="single">Single Bed</option>
+                      <option value="sofa-bed">Sofa Bed</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Room Location Preference
+                    </label>
+                    <select
+                      name="room_location_preference"
+                      value={formData.room_location_preference}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">No preference</option>
+                      <option value="high-floor">High Floor</option>
+                      <option value="low-floor">Low Floor</option>
+                      <option value="near-elevator">Near Elevator</option>
+                      <option value="away-elevator">Away from Elevator</option>
+                      <option value="quiet-area">Quiet Area</option>
+                      <option value="street-view">Street View</option>
+                      <option value="pool-view">Pool View</option>
+                      <option value="garden-view">Garden View</option>
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Accessibility Needs
+                    </label>
+                    <textarea
+                      name="accessibility_needs"
+                      value={formData.accessibility_needs}
+                      onChange={handleInputChange}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                      placeholder="Please specify any accessibility requirements (wheelchair access, hearing impaired assistance, etc.)"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Arrival Instructions & Special Requests
+                    </label>
+                    <textarea
+                      name="arrival_instructions"
+                      value={formData.arrival_instructions}
+                      onChange={handleInputChange}
+                      rows={4}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                      placeholder="Any special requests, celebration details, early check-in/late check-out requests, etc."
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+          
+          {/* Additional Services */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200"
+          >
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <Plane className="w-5 h-5 text-blue-600" />
+                Additional Services
+              </h2>
+              
+              <div className="space-y-4">
+                {/* Airport Transfer */}
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="airport_transfer"
+                      name="airport_transfer"
+                      checked={formData.airport_transfer}
+                      onChange={handleInputChange}
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <label htmlFor="airport_transfer" className="text-lg font-medium text-gray-900">
+                      Airport Transfer Service
+                    </label>
+                  </div>
+                  
+                  {formData.airport_transfer && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-8"
+                    >
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Transfer Type
+                        </label>
+                        <select
+                          name="airport_transfer_type"
+                          value={formData.airport_transfer_type}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        >
+                          <option value="">Select transfer type</option>
+                          <option value="pickup">Airport Pickup Only</option>
+                          <option value="drop">Airport Drop Only</option>
+                          <option value="both">Both Pickup & Drop</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Flight Details
+                        </label>
+                        <input
+                          type="text"
+                          name="flight_details"
+                          value={formData.flight_details}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          placeholder="Flight number, arrival/departure time"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Spa Services */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="spa_services"
+                      name="spa_services"
+                      checked={formData.spa_services}
+                      onChange={handleInputChange}
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <label htmlFor="spa_services" className="text-lg font-medium text-gray-900">
+                      Spa & Wellness Services
+                    </label>
+                  </div>
+                  
+                  {formData.spa_services && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="ml-8"
+                    >
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Spa Package
+                      </label>
+                      <select
+                        name="spa_package"
+                        value={formData.spa_package}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      >
+                        <option value="">Select spa package</option>
+                        <option value="couples-massage">Couples Massage</option>
+                        <option value="aromatherapy">Aromatherapy Session</option>
+                        <option value="full-body">Full Body Spa</option>
+                        <option value="facial">Premium Facial</option>
+                        <option value="wellness-package">Complete Wellness Package</option>
+                      </select>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Restaurant Booking */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="restaurant_booking"
+                      name="restaurant_booking"
+                      checked={formData.restaurant_booking}
+                      onChange={handleInputChange}
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <label htmlFor="restaurant_booking" className="text-lg font-medium text-gray-900">
+                      Restaurant Reservation
+                    </label>
+                  </div>
+                  
+                  {formData.restaurant_booking && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="ml-8"
+                    >
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Restaurant Preference
+                      </label>
+                      <select
+                        name="restaurant_preference"
+                        value={formData.restaurant_preference}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      >
+                        <option value="">Select restaurant</option>
+                        <option value="fine-dining">Fine Dining Restaurant</option>
+                        <option value="rooftop">Rooftop Restaurant</option>
+                        <option value="poolside">Poolside Cafe</option>
+                        <option value="lobby-lounge">Lobby Lounge</option>
+                        <option value="bar">Hotel Bar</option>
+                      </select>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Other Services */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="laundry_service"
+                      name="laundry_service"
+                      checked={formData.laundry_service}
+                      onChange={handleInputChange}
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <label htmlFor="laundry_service" className="text-lg font-medium text-gray-900">
+                      Laundry Service
+                    </label>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="tour_packages"
+                      name="tour_packages"
+                      checked={formData.tour_packages}
+                      onChange={handleInputChange}
+                      className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <label htmlFor="tour_packages" className="text-lg font-medium text-gray-900">
+                      Local Tour Packages
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+          
+          {/* Emergency Contact */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200"
+          >
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <Phone className="w-5 h-5 text-blue-600" />
+                Emergency Contact Information
+              </h2>
+              
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Contact Name
+                    </label>
+                    <input
+                      type="text"
+                      name="emergency_name"
+                      value={formData.emergency_name}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      placeholder="Full name of emergency contact"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Relationship
+                    </label>
+                    <select
+                      name="emergency_relationship"
+                      value={formData.emergency_relationship}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">Select relationship</option>
+                      <option value="spouse">Spouse</option>
+                      <option value="parent">Parent</option>
+                      <option value="child">Child</option>
+                      <option value="sibling">Sibling</option>
+                      <option value="friend">Friend</option>
+                      <option value="colleague">Colleague</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      name="emergency_phone"
+                      value={formData.emergency_phone}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      placeholder="+91 98765 43210"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address (Optional)
+                    </label>
+                    <input
+                      type="email"
+                      name="emergency_email"
+                      value={formData.emergency_email}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      placeholder="emergency@example.com"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+          
+          {/* Company Information */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200"
+          >
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <Building className="w-5 h-5 text-blue-600" />
+                Company Information
+              </h2>
+              
+              <div className="space-y-6">
+                {/* Corporate Booking Toggle */}
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id="is_corporate"
+                    name="is_corporate"
+                    checked={formData.is_corporate}
+                    onChange={handleInputChange}
+                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                  <label htmlFor="is_corporate" className="text-lg font-medium text-gray-900">
+                    This is a corporate booking
+                  </label>
+                </div>
+                
+                {/* Corporate Details - Show only if corporate is selected */}
+                {formData.is_corporate && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="space-y-6"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Company Name
+                        </label>
+                        <input
+                          type="text"
+                          name="company_name"
+                          value={formData.company_name}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          placeholder="Company name"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          GST Number
+                        </label>
+                        <input
+                          type="text"
+                          name="company_gst"
+                          value={formData.company_gst}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          placeholder="GST number"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Contact Person
+                        </label>
+                        <input
+                          type="text"
+                          name="company_contact_person"
+                          value={formData.company_contact_person}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          placeholder="Contact person name"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Company Address
+                        </label>
+                        <textarea
+                          name="company_address"
+                          value={formData.company_address}
+                          onChange={handleInputChange}
+                          rows={3}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                          placeholder="Complete company address"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Company Email
+                        </label>
+                        <input
+                          type="email"
+                          name="company_email"
+                          value={formData.company_email}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          placeholder="company@example.com"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+          
+     
         </div>
       </form>
 
