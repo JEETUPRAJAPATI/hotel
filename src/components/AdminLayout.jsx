@@ -42,7 +42,7 @@ const AdminLayout = ({ children }) => {
       
       {/* Main Content - No margin on mobile, margin on desktop */}
       <div className={`pt-16 lg:pt-20 transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'}`}>
-        <div className="w-full">
+        <div className="w-full overflow-y-auto scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
           {children}
         </div>
       </div>

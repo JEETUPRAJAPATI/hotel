@@ -50,6 +50,14 @@ import Reports from './pages/manager/Reports'
 import Finance from './pages/manager/Finance'
 import ManagerHousekeeping from './pages/manager/Housekeeping'
 
+// Manager Reservations Components
+import ManagerReservations from './pages/manager/reservations/Reservations'
+import CreateManagerReservation from './pages/manager/reservations/CreateReservation'
+import EditManagerReservation from './pages/manager/reservations/EditReservation'
+
+// Manager Front Office
+import ManagerFrontOffice from './pages/manager/FrontOffice'
+
 // Restaurant Management Components
 import RestaurantManagement from './pages/RestaurantManagement'
 
@@ -80,6 +88,9 @@ import OwnerHousekeeping from './pages/owner/Housekeeping'
 
 // Admin Reservations
 import AdminReservations from './pages/admin/reservations/Reservations'
+
+// Admin Agents
+import AdminAgentsManagement from './pages/admin/agents/AgentsManagement'
 
 // Owner Staff Management Components
 import OwnerStaffList from './pages/owner/staff/OwnerStaffList'
@@ -408,6 +419,18 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Admin Agents Management */}
+          <Route
+            path="/admin/agents"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+                <AdminLayout>
+                  <AdminAgentsManagement />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
           
           {/* Manager Routes */}
           <Route
@@ -603,6 +626,52 @@ function App() {
               <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
                 <ManagerLayout>
                   <AttendanceManagement />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Manager Reservations Routes */}
+          <Route
+            path="/manager/reservations"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <ManagerReservations />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/manager/reservations/create"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <CreateManagerReservation />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/manager/reservations/edit/:id"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <EditManagerReservation />
+                </ManagerLayout>
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Manager Front Office Route */}
+          <Route
+            path="/manager/front-office"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin', 'manager']}>
+                <ManagerLayout>
+                  <ManagerFrontOffice />
                 </ManagerLayout>
               </ProtectedRoute>
             }

@@ -42,7 +42,7 @@ const ManagerLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Desktop Sidebar - Using CommonSidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block fixed left-0 top-0 bottom-0 z-30">
         <CommonSidebar 
           isCollapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -182,7 +182,7 @@ const ManagerLayout = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6 scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
           {children}
         </main>
       </div>

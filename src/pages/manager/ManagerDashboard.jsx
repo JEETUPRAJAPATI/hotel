@@ -89,16 +89,16 @@ const ManagerDashboard = () => {
   ]);
 
   return (
-    <div className="min-h-screen bg-gray-50 px-4 lg:px-6">
-      <div className="max-w-8xl mx-auto">
+    <>
+      <div className="w-full">
         {/* Header */}
-        <div className="pt-6 mb-8">
+        <div className="mb-6">
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Manager Dashboard</h1>
           <p className="text-sm lg:text-base text-gray-600 mt-1">Multi-Hotel & Restaurant Performance Overview</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
             title="Total Hotels"
             value={stats.totalHotels}
@@ -226,8 +226,8 @@ const ManagerDashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 mb-8"
-        >
+          className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 mb-8">
+        
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Recent Restaurant Orders</h3>
             <div className="p-2 bg-green-50 rounded-lg">
@@ -269,8 +269,7 @@ const ManagerDashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg shadow-sm border border-blue-200 p-5 mb-8"
-        >
+          className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg shadow-sm border border-blue-200 p-5 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Demo Credentials</h3>
             <button 
@@ -315,8 +314,8 @@ const ManagerDashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
-        >
+          className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <button className="flex items-center justify-center gap-2 p-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors border border-blue-200">
@@ -338,7 +337,7 @@ const ManagerDashboard = () => {
           </div>
         </motion.div>
       </div>
-    </div>
+    </>
   );
 };
 
