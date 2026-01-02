@@ -15,7 +15,7 @@ import {
   DollarSign
 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart as RechartsPieChart, Cell } from 'recharts'
-import AdminSidebar from './AdminSidebar'
+import CommonSidebar from './sidebar/CommonSidebar'
 
 const SuperAdminDashboard = () => {
   const [selectedTab, setSelectedTab] = useState('overview')
@@ -79,8 +79,7 @@ const SuperAdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* We can create a SuperAdminSidebar later, for now use AdminSidebar */}
-      <AdminSidebar />
+      <CommonSidebar />
       
       {/* Main Content */}
       <div className="flex-1 lg:ml-72">

@@ -3,6 +3,7 @@ export const mockHotels = [
   {
     id: 1,
     name: "Grand Palace Hotel",
+    image: "https://picsum.photos/seed/hotel1/400/300",
     owner: "John Smith",
     address: {
       street: "123 Main Street",
@@ -26,6 +27,7 @@ export const mockHotels = [
   {
     id: 2,
     name: "Ocean View Resort",
+    image: "https://picsum.photos/seed/hotel2/400/300",
     owner: "Sarah Johnson",
     address: {
       street: "456 Beach Boulevard",
@@ -49,6 +51,7 @@ export const mockHotels = [
   {
     id: 3,
     name: "Mountain Lodge",
+    image: "https://picsum.photos/seed/hotel3/400/300",
     owner: "Michael Brown",
     address: {
       street: "789 Mountain Road",
@@ -72,6 +75,7 @@ export const mockHotels = [
   {
     id: 4,
     name: "City Center Hotel",
+    image: "https://picsum.photos/seed/hotel4/400/300",
     owner: "Emma Davis",
     address: {
       street: "321 Downtown Avenue",
@@ -95,6 +99,7 @@ export const mockHotels = [
   {
     id: 5,
     name: "Luxury Suites",
+    image: "https://picsum.photos/seed/hotel5/400/300",
     owner: "Robert Wilson",
     address: {
       street: "567 Elite Street",
@@ -118,6 +123,7 @@ export const mockHotels = [
   {
     id: 6,
     name: "Budget Inn",
+    image: "https://picsum.photos/seed/hotel6/400/300",
     owner: "Lisa Anderson",
     address: {
       street: "890 Economy Lane",
@@ -141,6 +147,7 @@ export const mockHotels = [
   {
     id: 7,
     name: "Historic Inn",
+    image: "https://picsum.photos/seed/hotel7/400/300",
     owner: "David Miller",
     address: {
       street: "234 Heritage Street",
@@ -164,6 +171,7 @@ export const mockHotels = [
   {
     id: 8,
     name: "Beachside Hotel",
+    image: "https://picsum.photos/seed/hotel8/400/300",
     owner: "Jennifer Taylor",
     address: {
       street: "678 Coastal Highway",
@@ -187,6 +195,7 @@ export const mockHotels = [
   {
     id: 9,
     name: "Airport Lodge",
+    image: "https://picsum.photos/seed/hotel9/400/300",
     owner: "Thomas Garcia",
     address: {
       street: "901 Airport Road",
@@ -210,6 +219,7 @@ export const mockHotels = [
   {
     id: 10,
     name: "Countryside Retreat",
+    image: "https://picsum.photos/seed/hotel10/400/300",
     owner: "Maria Rodriguez",
     address: {
       street: "555 Rural Route",

@@ -2,39 +2,24 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Home, Menu as MenuIcon, ShoppingCart, UtensilsCrossed, DollarSign,
-  Package, Receipt, BarChart3, Settings, LogOut, User, Bell,
-  ChevronLeft, ChevronRight, X
+  LogOut, User, Bell,
+  ChevronLeft, ChevronRight, X, Menu as MenuIconBtn, ChefHat
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import CommonSidebar from './sidebar/CommonSidebar';
 
 const RestaurantLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/restaurant/dashboard' },
-    { id: 'menu', label: 'Menu Management', icon: MenuIcon, path: '/restaurant/menu' },
-    { id: 'orders', label: 'Orders', icon: ShoppingCart, path: '/restaurant/orders' },
-    { id: 'kot', label: 'Kitchen Display (KOT)', icon: UtensilsCrossed, path: '/restaurant/kot' },
-    { id: 'pos', label: 'Point of Sale', icon: DollarSign, path: '/restaurant/pos' },
-    { id: 'vendors', label: 'Vendors', icon: Package, path: '/restaurant/vendors' },
-    { id: 'expenses', label: 'Expenses', icon: Receipt, path: '/restaurant/expenses' },
-    { id: 'reports', label: 'Reports', icon: BarChart3, path: '/restaurant/reports' },
-    { id: 'settings', label: 'Settings', icon: Settings, path: '/restaurant/settings' }
-  ];
 
   const notifications = [
     { id: 1, title: 'New Order Received', message: 'Order #ORD001 from Table 5', time: '2 mins ago', type: 'order' },
     { id: 2, title: 'Low Stock Alert', message: 'Mozzarella Cheese running low', time: '10 mins ago', type: 'alert' },
     { id: 3, title: 'Payment Received', message: '$45.50 payment confirmed', time: '15 mins ago', type: 'payment' }
   ];
-
-  const handleMenuClick = (path) => {
-    window.location.href = path;
-  };
 
   const handleLogout = () => {
     logout();
@@ -43,112 +28,68 @@ const RestaurantLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <motion.div
-        initial={false}
-        animate={{ width: sidebarCollapsed ? '80px' : '280px' }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="bg-white shadow-xl border-r border-gray-200 flex flex-col relative z-20"
-      >
-        {/* Sidebar Header */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            {!sidebarCollapsed && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-3"
-              >
-                <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center">
-                  <UtensilsCrossed className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="font-bold text-gray-900">RestaurantPro</h2>
-                  <p className="text-xs text-gray-600">Management System</p>
-                </div>
-              </motion.div>
-            )}
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+      {/* Desktop Sidebar - Using CommonSidebar */}
+      <div className="hidden lg:block">
+        <CommonSidebar 
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
+      </div>
+
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ x: -300 }}
+              animate={{ x: 0 }}
+              exit={{ x: -300 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="fixed left-0 top-0 bottom-0 w-80 bg-white shadow-xl z-50 lg:hidden"
             >
-              {sidebarCollapsed ? (
-                <ChevronRight className="w-5 h-5 text-gray-600" />
-              ) : (
-                <ChevronLeft className="w-5 h-5 text-gray-600" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Navigation Menu */}
-        <nav className="flex-1 p-4">
-          <div className="space-y-2">
-            {menuItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleMenuClick(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                  location.pathname === item.path
-                    ? 'bg-orange-100 text-orange-600 border border-orange-200'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`}
-              >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                {!sidebarCollapsed && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="font-medium"
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </button>
-            ))}
-          </div>
-        </nav>
-
-        {/* User Profile */}
-        <div className="p-4 border-t border-gray-200">
-          {!sidebarCollapsed ? (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
-              <div className="w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <ChefHat className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-bold text-gray-800">Restaurant Owner</h1>
+                    <p className="text-xs text-gray-500">Restaurant Management</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 rounded-lg hover:bg-gray-100"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate">{user?.name || 'Restaurant Owner'}</p>
-                <p className="text-sm text-gray-600 truncate">{user?.email}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex justify-center">
-              <div className="w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
-              </div>
-            </div>
-          )}
-          
-          {!sidebarCollapsed && (
-            <button
-              onClick={handleLogout}
-              className="w-full mt-3 flex items-center gap-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">Logout</span>
-            </button>
-          )}
-        </div>
-      </motion.div>
+              <CommonSidebar isCollapsed={false} />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      {/* Main Content - Adjust margin based on sidebar state */}
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'}`}>
         {/* Top Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden"
+              >
+                <MenuIconBtn className="w-5 h-5 text-gray-600" />
+              </button>
               <h1 className="text-xl font-semibold text-gray-900">Restaurant Management</h1>
             </div>
             

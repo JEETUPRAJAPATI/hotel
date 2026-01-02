@@ -16,7 +16,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import HotelManagement from './pages/HotelManagement'
 import HotelEdit from './pages/HotelEdit'
 import UserManagement from './pages/UserManagement'
-import ManagerDashboard from './pages/ManagerDashboard'
+import ManagerDashboard from './pages/manager/ManagerDashboard'
 import HotelList from './pages/HotelList'
 import HotelProfile from './pages/HotelProfile'
 import AddHotel from './pages/AddHotel'
@@ -32,6 +32,13 @@ import POSSystem from './pages/POSSystem'
 import AgentManagement from './pages/AgentManagement'
 import AgentCreateEdit from './pages/AgentCreateEdit'
 import AgentDetails from './pages/AgentDetails'
+
+// Admin Role & Permissions
+import RolesPermissionsManagement from './pages/admin/RolesPermissionsManagement'
+import Settings from './pages/admin/Settings'
+import DatabaseManagement from './pages/admin/DatabaseManagement'
+import AdminFinance from './pages/admin/Finance'
+import AdminReports from './pages/admin/Reports'
 
 // Staff Components
 import StaffManagement from './pages/manager/StaffManagement'
@@ -70,6 +77,9 @@ import CreateReservation from './pages/owner/reservations/CreateReservation'
 import EditReservation from './pages/owner/reservations/EditReservation'
 import FrontOffice from './pages/owner/FrontOffice'
 import OwnerHousekeeping from './pages/owner/Housekeeping'
+
+// Admin Reservations
+import AdminReservations from './pages/admin/reservations/Reservations'
 
 // Owner Staff Management Components
 import OwnerStaffList from './pages/owner/staff/OwnerStaffList'
@@ -268,6 +278,17 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+                <AdminLayout>
+                  <AdminDashboard />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
           
           {/* Admin Hotel Management Routes */}
           <Route
@@ -299,6 +320,90 @@ function App() {
               <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
                 <AdminLayout>
                   <UserManagement />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Roles & Permissions */}
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+                <AdminLayout>
+                  <RolesPermissionsManagement />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Settings */}
+          <Route
+            path="/admin/settings"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+                <AdminLayout>
+                  <Settings />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Database Management */}
+          <Route
+            path="/admin/database"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+                <AdminLayout>
+                  <DatabaseManagement />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Finance Management */}
+          <Route
+            path="/admin/finance"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+                <AdminLayout>
+                  <AdminFinance />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Reports Module */}
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+                <AdminLayout>
+                  <AdminReports />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Restaurant Management */}
+          <Route
+            path="/admin/restaurants"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+                <AdminLayout>
+                  <RestaurantManagement />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Reservations Management */}
+          <Route
+            path="/admin/reservations"
+            element={
+              <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+                <AdminLayout>
+                  <AdminReservations />
                 </AdminLayout>
               </ProtectedRoute>
             }

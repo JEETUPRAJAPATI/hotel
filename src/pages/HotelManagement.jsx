@@ -213,13 +213,13 @@ const HotelManagement = () => {
                   Hotel ID
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hotel Name
+                  Hotel
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Owner
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Address
+                  Location
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Rating
@@ -251,14 +251,27 @@ const HotelManagement = () => {
                     #{hotel.id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{hotel.name}</div>
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={hotel.image || 'https://via.placeholder.com/80x60?text=No+Image'}
+                        alt={hotel.name}
+                        className="h-16 w-20 object-cover rounded-lg border border-gray-200"
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/80x60?text=No+Image';
+                        }}
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{hotel.name}</div>
+                        <div className="text-xs text-gray-500">{hotel.rooms} rooms</div>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {hotel.owner}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{hotel.address.street}</div>
-                    <div className="text-sm text-gray-500">{hotel.address.city}, {hotel.address.country}</div>
+                    <div className="text-sm text-gray-900">{hotel.address.city}</div>
+                    <div className="text-sm text-gray-500">{hotel.address.country}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-yellow-500" title={`${hotel.rating}/5 stars`}>

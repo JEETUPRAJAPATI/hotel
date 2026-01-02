@@ -1,0 +1,21 @@
+// Export all sidebar sections
+export { DashboardSection } from './DashboardSection';
+export { HotelManagementSection } from './HotelManagementSection';
+export { RestaurantManagementSection } from './RestaurantManagementSection';
+export { AgentManagementSection } from './AgentManagementSection';
+export { ReservationsSection } from './ReservationsSection';
+export { FrontOfficeSection } from './FrontOfficeSection';
+export { HousekeepingSection } from './HousekeepingSection';
+export { FinanceSection } from './FinanceSection';
+export { ReportsSection } from './ReportsSection';
+export { StaffManagementSection } from './StaffManagementSection';
+export { UserManagementSection } from './UserManagementSection';
+export { SettingsSection } from './SettingsSection';
+export { DatabaseSection } from './DatabaseSection';
+export { SecuritySection } from './SecuritySection';
+export { MenuManagementSection } from './MenuManagementSection';
+export { OrdersSection } from './OrdersSection';
+export { KitchenDisplaySection } from './KitchenDisplaySection';
+export { POSSection } from './POSSection';
+export { AttendanceSection } from './AttendanceSection';
+export { DepartmentSection } from './DepartmentSection';
