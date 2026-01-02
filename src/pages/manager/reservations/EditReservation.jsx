@@ -5,115 +5,143 @@ import {
   Calendar, 
   Save, 
   ArrowLeft, 
+  Users,
   User,
   Mail,
   Phone,
+  MapPin,
   Building,
+  Globe,
+  CreditCard,
   DollarSign,
-  AlertCircle,
-  Lock,
-  X
+  Bed,
+  Clock,
+  UserPlus
 } from 'lucide-react';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
-const EditManagerReservation = () => {
+const EditReservation = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   
-  const [formData, setFormData] = useState(null);
-  const [originalData, setOriginalData] = useState(null);
+  const [formData, setFormData] = useState({
+    guest_type: 'existing',
+    guest_id: '',
+    guest_name: '',
+    guest_email: '',
+    guest_phone: '',
+    guest_address: '',
+    guest_city: '',
+    guest_state: '',
+    guest_country: 'India',
+    guest_id_type: 'passport',
+    guest_id_number: '',
+    check_in_date: '',
+    check_out_date: '',
+    num_adults: 1,
+    num_children: 0,
+    special_requests: '',
+    room_type: '',
+    room_number: '',
+    rate_plan: 'standard',
+    base_rate: '',
+    taxes: '',
+    total_amount: '',
+    deposit_amount: '',
+    payment_method: 'cash',
+    payment_status: 'pending',
+    source: 'direct',
+    assigned_to: '',
+    notes: '',
+    status: 'confirmed'
+  });
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
+  const [availableRooms, setAvailableRooms] = useState([]);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
 
-  const TAX_RATE = 0.18;
+  // Mock reservation data
+  const mockReservation = {
+    id: 1,
+    guest_type: 'existing',
+    guest_id: '1',
+    guest_name: 'John Smith',
+    guest_email: 'john@example.com',
+    guest_phone: '+91 98765 43210',
+    guest_address: '123 Main Street',
+    guest_city: 'Mumbai',
+    guest_state: 'Maharashtra',
+    guest_country: 'India',
+    guest_id_type: 'passport',
+    guest_id_number: 'P1234567',
+    check_in_date: '2024-03-15',
+    check_out_date: '2024-03-18',
+    num_adults: 2,
+    num_children: 1,
+    special_requests: 'Late check-in requested',
+    room_type: 'deluxe',
+    room_number: '101',
+    rate_plan: 'standard',
+    base_rate: '5000',
+    taxes: '900',
+    total_amount: '5900',
+    deposit_amount: '1770',
+    payment_method: 'card',
+    payment_status: 'paid',
+    source: 'online',
+    assigned_to: '1',
+    notes: 'VIP guest',
+    status: 'confirmed'
+  };
+
+  const mockGuests = [
+    { id: 1, name: 'John Smith', email: 'john@example.com', phone: '+91 98765 43210' },
+    { id: 2, name: 'Sarah Johnson', email: 'sarah@example.com', phone: '+91 87654 32109' },
+    { id: 3, name: 'Michael Chen', email: 'michael@example.com', phone: '+91 76543 21098' }
+  ];
+
+  const mockRoomTypes = [
+    { id: 'deluxe', name: 'Deluxe Room', base_rate: 5000 },
+    { id: 'suite', name: 'Executive Suite', base_rate: 8000 },
+    { id: 'presidential', name: 'Presidential Suite', base_rate: 15000 },
+    { id: 'standard', name: 'Standard Room', base_rate: 3000 }
+  ];
+
+  const mockStaff = [
+    { id: 1, name: 'Alice Manager' },
+    { id: 2, name: 'Bob Receptionist' },
+    { id: 3, name: 'Carol Supervisor' }
+  ];
 
   useEffect(() => {
-    loadReservation();
+    loadReservationData();
   }, [id]);
 
-  const loadReservation = async () => {
+  const loadReservationData = async () => {
     try {
       setLoading(true);
-      // Mock API call
+      // Mock API call - replace with actual API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Mock reservation data
-      const mockReservation = {
-        id: parseInt(id),
-        reservation_number: 'RES-2024-001',
-        guest_name: 'John Smith',
-        guest_email: 'john@example.com',
-        guest_phone: '+91 98765 43210',
-        guest_address: '123 Main Street',
-        guest_city: 'Mumbai',
-        guest_state: 'Maharashtra',
-        guest_id_type: 'passport',
-        guest_id_number: 'P1234567',
-        check_in_date: '2024-03-15',
-        check_out_date: '2024-03-18',
-        check_in_time: '14:00',
-        check_out_time: '11:00',
-        num_adults: 2,
-        num_children: 1,
-        room_type: 'deluxe',
-        room_number: '101',
-        base_rate: 5000,
-        extra_charges: 0,
-        discount: 0,
-        taxes: 2700,
-        total_amount: 17700,
-        deposit_amount: 5310,
-        payment_method: 'card',
-        payment_status: 'partial',
-        status: 'confirmed', // confirmed, checked_in, checked_out, cancelled
-        source: 'direct',
-        special_requests: 'Late check-in requested',
-        notes: 'VIP guest'
-      };
-      
       setFormData(mockReservation);
-      setOriginalData(mockReservation);
+      
+      // Load available rooms for current selection
+      const rooms = [
+        { number: '101', floor: 1, status: 'available' },
+        { number: '102', floor: 1, status: 'available' },
+        { number: '201', floor: 2, status: 'available' }
+      ];
+      setAvailableRooms(rooms);
     } catch (error) {
       console.error('Error loading reservation:', error);
-      toast.error('Failed to load reservation');
-      navigate('/manager/reservations');
+      toast.error('Failed to load reservation data');
     } finally {
       setLoading(false);
     }
   };
-
-  const calculateNights = () => {
-    if (!formData.check_in_date || !formData.check_out_date) return 0;
-    const checkIn = new Date(formData.check_in_date);
-    const checkOut = new Date(formData.check_out_date);
-    const diff = checkOut - checkIn;
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
-  };
-
-  const calculateTotals = () => {
-    const nights = calculateNights();
-    if (nights <= 0) return;
-
-    const baseTotal = formData.base_rate * nights;
-    const withExtras = baseTotal + parseFloat(formData.extra_charges || 0);
-    const afterDiscount = withExtras - parseFloat(formData.discount || 0);
-    const taxes = afterDiscount * TAX_RATE;
-    const total = afterDiscount + taxes;
-
-    setFormData(prev => ({
-      ...prev,
-      taxes: Math.round(taxes),
-      total_amount: Math.round(total)
-    }));
-  };
-
-  useEffect(() => {
-    if (formData) {
-      calculateTotals();
-    }
-  }, [formData?.base_rate, formData?.extra_charges, formData?.discount, formData?.check_in_date, formData?.check_out_date]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -128,38 +156,103 @@ const EditManagerReservation = () => {
         [name]: ''
       }));
     }
+
+    if (name === 'base_rate') {
+      calculateTotals(value);
+    }
+
+    if (['check_in_date', 'check_out_date', 'room_type'].includes(name)) {
+      checkRoomAvailability();
+    }
+  };
+
+  const handleGuestSelect = (guestId) => {
+    const guest = mockGuests.find(g => g.id === parseInt(guestId));
+    if (guest) {
+      setFormData(prev => ({
+        ...prev,
+        guest_id: guestId,
+        guest_name: guest.name,
+        guest_email: guest.email,
+        guest_phone: guest.phone
+      }));
+    }
+  };
+
+  const handleRoomTypeChange = (roomTypeId) => {
+    const roomType = mockRoomTypes.find(rt => rt.id === roomTypeId);
+    if (roomType) {
+      setFormData(prev => ({
+        ...prev,
+        room_type: roomTypeId,
+        base_rate: roomType.base_rate.toString()
+      }));
+      calculateTotals(roomType.base_rate);
+    }
+  };
+
+  const calculateTotals = (baseRate) => {
+    const rate = parseFloat(baseRate) || 0;
+    const taxes = rate * 0.18; // 18% GST
+    const total = rate + taxes;
+    
+    setFormData(prev => ({
+      ...prev,
+      taxes: taxes.toFixed(2),
+      total_amount: total.toFixed(2),
+      deposit_amount: prev.deposit_amount || (total * 0.3).toFixed(2)
+    }));
+  };
+
+  const checkRoomAvailability = async () => {
+    if (!formData.check_in_date || !formData.check_out_date || !formData.room_type) return;
+    
+    try {
+      setCheckingAvailability(true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const rooms = [
+        { number: '101', floor: 1, status: 'available' },
+        { number: '102', floor: 1, status: 'available' },
+        { number: '201', floor: 2, status: 'available' },
+        { number: '202', floor: 2, status: 'maintenance' }
+      ].filter(room => room.status === 'available');
+      
+      setAvailableRooms(rooms);
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      toast.error('Failed to check room availability');
+    } finally {
+      setCheckingAvailability(false);
+    }
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    // Manager Restriction: Cannot edit certain fields after check-in
-    if (formData.status === 'checked_in' || formData.status === 'checked_out') {
-      // Only special requests and notes can be edited after check-in
-      return Object.keys(newErrors).length === 0;
+    if (formData.guest_type === 'existing' && !formData.guest_id) {
+      newErrors.guest_id = 'Please select a guest';
+    }
+    
+    if (formData.guest_type === 'new') {
+      if (!formData.guest_name.trim()) newErrors.guest_name = 'Guest name is required';
+      if (!formData.guest_email.trim() || !/^\S+@\S+\.\S+$/.test(formData.guest_email)) {
+        newErrors.guest_email = 'Valid email is required';
+      }
+      if (!formData.guest_phone.trim()) newErrors.guest_phone = 'Phone number is required';
     }
 
-    if (!formData.guest_name.trim()) newErrors.guest_name = 'Guest name is required';
-    if (!formData.guest_email.trim()) newErrors.guest_email = 'Email is required';
-    if (!formData.guest_phone.trim()) newErrors.guest_phone = 'Phone is required';
     if (!formData.check_in_date) newErrors.check_in_date = 'Check-in date is required';
     if (!formData.check_out_date) newErrors.check_out_date = 'Check-out date is required';
-
-    // Manager Restriction: Cannot backdate reservations
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const checkIn = new Date(formData.check_in_date);
-    checkIn.setHours(0, 0, 0, 0);
-    
-    if (checkIn < today && checkIn.getTime() !== new Date(originalData.check_in_date).setHours(0, 0, 0, 0)) {
-      newErrors.check_in_date = 'Cannot change to past dates';
-    }
-
     if (formData.check_in_date && formData.check_out_date) {
-      const checkOut = new Date(formData.check_out_date);
-      if (checkOut <= checkIn) {
-        newErrors.check_out_date = 'Check-out must be after check-in';
+      if (new Date(formData.check_in_date) >= new Date(formData.check_out_date)) {
+        newErrors.check_out_date = 'Check-out date must be after check-in date';
       }
+    }
+    if (!formData.room_type) newErrors.room_type = 'Room type is required';
+    if (!formData.room_number) newErrors.room_number = 'Please select a room';
+    if (!formData.base_rate || formData.base_rate <= 0) {
+      newErrors.base_rate = 'Valid room rate is required';
     }
 
     setErrors(newErrors);
@@ -170,14 +263,13 @@ const EditManagerReservation = () => {
     e.preventDefault();
     
     if (!validateForm()) {
-      toast.error('Please fix the errors before saving');
+      toast.error('Please fix the errors before submitting');
       return;
     }
 
     try {
       setSaving(true);
       
-      // Mock API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       toast.success('Reservation updated successfully!');
@@ -190,22 +282,17 @@ const EditManagerReservation = () => {
     }
   };
 
-  // Determine if field should be disabled based on reservation status
-  const isFieldDisabled = (fieldName) => {
-    // After check-in, only special_requests and notes can be edited
-    if (formData.status === 'checked_in' || formData.status === 'checked_out') {
-      return !['special_requests', 'notes'].includes(fieldName);
+  const calculateNights = () => {
+    if (formData.check_in_date && formData.check_out_date) {
+      const checkIn = new Date(formData.check_in_date);
+      const checkOut = new Date(formData.check_out_date);
+      const diffTime = Math.abs(checkOut - checkIn);
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
-    
-    // Cannot edit cancelled reservations
-    if (formData.status === 'cancelled') {
-      return true;
-    }
-    
-    return false;
+    return 0;
   };
 
-  if (loading || !formData) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <LoadingSpinner size="lg" />
@@ -213,350 +300,531 @@ const EditManagerReservation = () => {
     );
   }
 
-  const isPostCheckIn = formData.status === 'checked_in' || formData.status === 'checked_out';
-  const isCancelled = formData.status === 'cancelled';
-
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/manager/reservations')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Edit Reservation</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                {formData.reservation_number} - {formData.guest_name}
-              </p>
-            </div>
-          </div>
-          <div className={`px-4 py-2 rounded-lg font-medium text-sm ${
-            formData.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
-            formData.status === 'checked_in' ? 'bg-green-100 text-green-700' :
-            formData.status === 'checked_out' ? 'bg-purple-100 text-purple-700' :
-            'bg-red-100 text-red-700'
-          }`}>
-            {formData.status.replace('_', ' ').toUpperCase()}
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/manager/reservations')}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Edit Reservation</h1>
+            <p className="text-gray-600">Update reservation details</p>
           </div>
         </div>
+      </div>
 
-        {/* Restriction Alerts */}
-        {isPostCheckIn && (
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Section 1: Guest Information */}
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8"
           >
-            <Lock className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-yellow-900">
-              <p className="font-medium">Limited Editing After Check-in</p>
-              <p className="text-yellow-700 mt-1">
-                Guest has already checked in. Only special requests and internal notes can be modified.
-              </p>
-            </div>
-          </motion.div>
-        )}
-
-        {isCancelled && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3"
-          >
-            <X className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-red-900">
-              <p className="font-medium">Reservation Cancelled</p>
-              <p className="text-red-700 mt-1">
-                This reservation has been cancelled and cannot be edited. Create a new reservation if needed.
-              </p>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 shadow-sm p-8 space-y-8">
-          {/* Guest Information */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <User className="w-5 h-5 text-blue-600" />
-              Guest Information
-              {isFieldDisabled('guest_name') && <Lock className="w-4 h-4 text-gray-400" />}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="guest_name"
-                  value={formData.guest_name}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('guest_name')}
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.guest_name ? 'border-red-500' : 'border-gray-300'
-                  } ${isFieldDisabled('guest_name') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                />
-                {errors.guest_name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.guest_name}</p>
-                )}
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <Users className="w-5 h-5 text-blue-600" />
               </div>
+              <h2 className="text-xl font-semibold text-gray-900">Guest Information</h2>
+            </div>
 
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Guest Type
                 </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="email"
-                    name="guest_email"
-                    value={formData.guest_email}
-                    onChange={handleInputChange}
-                    disabled={isFieldDisabled('guest_email')}
-                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.guest_email ? 'border-red-500' : 'border-gray-300'
-                    } ${isFieldDisabled('guest_email') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  />
+                <div className="flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="guest_type"
+                      value="existing"
+                      checked={formData.guest_type === 'existing'}
+                      onChange={handleInputChange}
+                      className="mr-2"
+                    />
+                    Existing Guest
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="guest_type"
+                      value="new"
+                      checked={formData.guest_type === 'new'}
+                      onChange={handleInputChange}
+                      className="mr-2"
+                    />
+                    New Guest
+                  </label>
                 </div>
-                {errors.guest_email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.guest_email}</p>
-                )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="tel"
-                    name="guest_phone"
-                    value={formData.guest_phone}
-                    onChange={handleInputChange}
-                    disabled={isFieldDisabled('guest_phone')}
-                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.guest_phone ? 'border-red-500' : 'border-gray-300'
-                    } ${isFieldDisabled('guest_phone') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  />
+              {formData.guest_type === 'existing' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Guest *
+                  </label>
+                  <select
+                    name="guest_id"
+                    value={formData.guest_id}
+                    onChange={(e) => handleGuestSelect(e.target.value)}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors.guest_id ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    }`}
+                  >
+                    <option value="">Select a guest</option>
+                    {mockGuests.map(guest => (
+                      <option key={guest.id} value={guest.id}>
+                        {guest.name} - {guest.email}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.guest_id && <p className="text-red-500 text-sm mt-1">{errors.guest_id}</p>}
                 </div>
-                {errors.guest_phone && (
-                  <p className="mt-1 text-sm text-red-600">{errors.guest_phone}</p>
-                )}
-              </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name *
+                      </label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          name="guest_name"
+                          value={formData.guest_name}
+                          onChange={handleInputChange}
+                          className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                            errors.guest_name ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                          }`}
+                          placeholder="Enter guest name"
+                        />
+                      </div>
+                      {errors.guest_name && <p className="text-red-500 text-sm mt-1">{errors.guest_name}</p>}
+                    </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ID Number
-                </label>
-                <input
-                  type="text"
-                  name="guest_id_number"
-                  value={formData.guest_id_number}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('guest_id_number')}
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    isFieldDisabled('guest_id_number') ? 'bg-gray-100 cursor-not-allowed' : ''
-                  }`}
-                />
-              </div>
-            </div>
-          </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address *
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <input
+                          type="email"
+                          name="guest_email"
+                          value={formData.guest_email}
+                          onChange={handleInputChange}
+                          className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                            errors.guest_email ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                          }`}
+                          placeholder="Enter email address"
+                        />
+                      </div>
+                      {errors.guest_email && <p className="text-red-500 text-sm mt-1">{errors.guest_email}</p>}
+                    </div>
 
-          {/* Stay Details */}
-          <div className="border-t border-gray-200 pt-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-green-600" />
-              Stay Details
-              {isFieldDisabled('check_in_date') && <Lock className="w-4 h-4 text-gray-400" />}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Check-in Date <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  name="check_in_date"
-                  value={formData.check_in_date}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('check_in_date')}
-                  min={new Date().toISOString().split('T')[0]}
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.check_in_date ? 'border-red-500' : 'border-gray-300'
-                  } ${isFieldDisabled('check_in_date') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                />
-                {errors.check_in_date && (
-                  <p className="mt-1 text-sm text-red-600">{errors.check_in_date}</p>
-                )}
-              </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number *
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <input
+                          type="tel"
+                          name="guest_phone"
+                          value={formData.guest_phone}
+                          onChange={handleInputChange}
+                          className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                            errors.guest_phone ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                          }`}
+                          placeholder="Enter phone number"
+                        />
+                      </div>
+                      {errors.guest_phone && <p className="text-red-500 text-sm mt-1">{errors.guest_phone}</p>}
+                    </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Check-out Date <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  name="check_out_date"
-                  value={formData.check_out_date}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('check_out_date')}
-                  min={formData.check_in_date}
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.check_out_date ? 'border-red-500' : 'border-gray-300'
-                  } ${isFieldDisabled('check_out_date') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                />
-                {errors.check_out_date && (
-                  <p className="mt-1 text-sm text-red-600">{errors.check_out_date}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Adults
-                </label>
-                <input
-                  type="number"
-                  name="num_adults"
-                  value={formData.num_adults}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('num_adults')}
-                  min="1"
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    isFieldDisabled('num_adults') ? 'bg-gray-100 cursor-not-allowed' : ''
-                  }`}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Children
-                </label>
-                <input
-                  type="number"
-                  name="num_children"
-                  value={formData.num_children}
-                  onChange={handleInputChange}
-                  disabled={isFieldDisabled('num_children')}
-                  min="0"
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    isFieldDisabled('num_children') ? 'bg-gray-100 cursor-not-allowed' : ''
-                  }`}
-                />
-              </div>
-
-              {formData.check_in_date && formData.check_out_date && (
-                <div className="md:col-span-2 bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-gray-900">
-                    <Calendar className="w-5 h-5 text-blue-600" />
-                    <span className="font-semibold">Duration:</span>
-                    <span className="text-blue-600 font-bold">{calculateNights()} night(s)</span>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        ID Type
+                      </label>
+                      <select
+                        name="guest_id_type"
+                        value={formData.guest_id_type}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      >
+                        <option value="passport">Passport</option>
+                        <option value="driving_license">Driving License</option>
+                        <option value="aadhaar">Aadhaar Card</option>
+                        <option value="pan">PAN Card</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
 
-          {/* Room & Pricing */}
-          {!isPostCheckIn && (
-            <div className="border-t border-gray-200 pt-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Building className="w-5 h-5 text-purple-600" />
-                Room & Pricing
-              </h3>
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Room Rate × {calculateNights()} nights:</span>
-                  <span className="font-semibold text-gray-900">₹{(formData.base_rate * calculateNights()).toLocaleString()}</span>
+          {/* Section 2: Reservation Details */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8"
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-green-50 rounded-lg">
+                <Calendar className="w-5 h-5 text-green-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Reservation Details</h2>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Check-in Date *
+                  </label>
+                  <input
+                    type="date"
+                    name="check_in_date"
+                    value={formData.check_in_date}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors.check_in_date ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.check_in_date && <p className="text-red-500 text-sm mt-1">{errors.check_in_date}</p>}
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Taxes (18% GST - Fixed):</span>
-                  <span className="font-semibold text-gray-900">₹{formData.taxes.toLocaleString()}</span>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Check-out Date *
+                  </label>
+                  <input
+                    type="date"
+                    name="check_out_date"
+                    value={formData.check_out_date}
+                    onChange={handleInputChange}
+                    min={formData.check_in_date}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors.check_out_date ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.check_out_date && <p className="text-red-500 text-sm mt-1">{errors.check_out_date}</p>}
                 </div>
-                <div className="border-t-2 border-gray-300 pt-3 flex items-center justify-between">
-                  <span className="text-lg font-bold text-gray-900">Total Amount:</span>
-                  <span className="text-2xl font-bold text-green-600">₹{formData.total_amount.toLocaleString()}</span>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Adults
+                  </label>
+                  <select
+                    name="num_adults"
+                    value={formData.num_adults}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    {[1,2,3,4,5,6].map(num => (
+                      <option key={num} value={num}>{num}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Children
+                  </label>
+                  <select
+                    name="num_children"
+                    value={formData.num_children}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    {[0,1,2,3,4].map(num => (
+                      <option key={num} value={num}>{num}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Special Requests - Always Editable */}
-          <div className="border-t border-gray-200 pt-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Special Requests & Notes
-            </h3>
-            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Guest Special Requests
+                  Special Requests
                 </label>
                 <textarea
                   name="special_requests"
                   value={formData.special_requests}
                   onChange={handleInputChange}
-                  rows="3"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Any special requests from guest..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Internal Notes
-                </label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleInputChange}
-                  rows="3"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Internal notes for staff..."
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                  placeholder="Any special requests or notes"
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Action Buttons */}
-          {!isCancelled && (
-            <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={() => navigate('/manager/reservations')}
-                className="px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                disabled={saving}
-                className="flex items-center gap-2 px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {saving ? (
-                  <>
-                    <LoadingSpinner size="sm" />
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    <span>Save Changes</span>
-                  </>
-                )}
-              </button>
+          {/* Section 3: Room & Pricing */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8"
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-purple-50 rounded-lg">
+                <Bed className="w-5 h-5 text-purple-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Room & Pricing</h2>
             </div>
-          )}
-        </form>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Room Type *
+                  </label>
+                  <select
+                    name="room_type"
+                    value={formData.room_type}
+                    onChange={(e) => handleRoomTypeChange(e.target.value)}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors.room_type ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    }`}
+                  >
+                    <option value="">Select room type</option>
+                    {mockRoomTypes.map(type => (
+                      <option key={type.id} value={type.id}>
+                        {type.name} - ₹{type.base_rate}/night
+                      </option>
+                    ))}
+                  </select>
+                  {errors.room_type && <p className="text-red-500 text-sm mt-1">{errors.room_type}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Room Number *
+                  </label>
+                  <select
+                    name="room_number"
+                    value={formData.room_number}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      errors.room_number ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    }`}
+                  >
+                    <option value="">Select room</option>
+                    {availableRooms.map(room => (
+                      <option key={room.number} value={room.number}>
+                        Room {room.number} (Floor {room.floor})
+                      </option>
+                    ))}
+                  </select>
+                  {errors.room_number && <p className="text-red-500 text-sm mt-1">{errors.room_number}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Rate Plan
+                  </label>
+                  <select
+                    name="rate_plan"
+                    value={formData.rate_plan}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <option value="standard">Standard Rate</option>
+                    <option value="corporate">Corporate Rate</option>
+                    <option value="government">Government Rate</option>
+                    <option value="group">Group Rate</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Base Rate (per night) *
+                  </label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                    <input
+                      type="number"
+                      name="base_rate"
+                      value={formData.base_rate}
+                      onChange={handleInputChange}
+                      min="0"
+                      step="0.01"
+                      className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                        errors.base_rate ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      }`}
+                      placeholder="Enter rate"
+                    />
+                  </div>
+                  {errors.base_rate && <p className="text-red-500 text-sm mt-1">{errors.base_rate}</p>}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Right Column - Summary & Actions */}
+        <div className="space-y-8">
+          {/* Reservation Summary */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8"
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 bg-orange-50 rounded-lg">
+                <CreditCard className="w-5 h-5 text-orange-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Booking Summary</h2>
+            </div>
+
+            <div className="space-y-4">
+              {formData.check_in_date && formData.check_out_date && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-gray-600">Duration</span>
+                    <span className="font-medium">{calculateNights()} night(s)</span>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(formData.check_in_date).toLocaleDateString()} - {new Date(formData.check_out_date).toLocaleDateString()}
+                  </div>
+                </div>
+              )}
+
+              {formData.base_rate && (
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Room Rate</span>
+                    <span className="font-medium">₹{formData.base_rate}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Taxes (18%)</span>
+                    <span className="font-medium">₹{formData.taxes}</span>
+                  </div>
+                  <div className="border-t border-gray-200 pt-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-gray-900">Total Amount</span>
+                      <span className="font-bold text-lg text-blue-600">₹{formData.total_amount}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-4 mt-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status
+                  </label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <option value="confirmed">Confirmed</option>
+                    <option value="checked_in">Checked In</option>
+                    <option value="checked_out">Checked Out</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="no_show">No Show</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Deposit Amount
+                  </label>
+                  <input
+                    type="number"
+                    name="deposit_amount"
+                    value={formData.deposit_amount}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="0.01"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Enter deposit"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Payment Status
+                  </label>
+                  <select
+                    name="payment_status"
+                    value={formData.payment_status}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="paid">Paid</option>
+                    <option value="partial">Partially Paid</option>
+                    <option value="refunded">Refunded</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Internal Notes
+                  </label>
+                  <textarea
+                    name="notes"
+                    value={formData.notes}
+                    onChange={handleInputChange}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+                    placeholder="Internal notes for staff"
+                  />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </form>
+
+      {/* Bottom Action Bar */}
+      <div className="bg-white border-t border-gray-200 px-6 py-4 rounded-lg shadow-sm">
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => navigate('/manager/reservations')}
+            className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+            disabled={saving}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-50"
+          >
+            {saving ? (
+              <>
+                <LoadingSpinner size="sm" />
+                Updating...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Update Reservation
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default EditManagerReservation;
+export default EditReservation;

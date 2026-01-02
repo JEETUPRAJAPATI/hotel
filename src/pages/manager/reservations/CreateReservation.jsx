@@ -2,149 +2,126 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  Calendar, 
-  Save, 
-  ArrowLeft, 
-  Users,
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Building,
-  CreditCard,
-  DollarSign,
-  Bed,
-  Clock,
-  AlertCircle,
-  CheckCircle2,
-  X
+  Calendar, Save, ArrowLeft, Users, User, Mail, Phone, MapPin, 
+  Building, Globe, CreditCard, DollarSign, Bed, Clock, UserPlus,
+  Home, Star, Plane, Train, Car, Upload, Plus, X, FileText
 } from 'lucide-react';
-import LoadingSpinner from '../../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
-const CreateManagerReservation = () => {
+const CreateReservation = () => {
   const navigate = useNavigate();
-  
+  const [activeTab, setActiveTab] = useState('guest');
+  const [guestType, setGuestType] = useState('existing'); // 'existing' or 'new'
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
-    // Guest Information
-    guest_type: 'new', // 'existing' or 'new'
-    guest_id: '',
-    guest_name: '',
-    guest_email: '',
-    guest_phone: '',
-    guest_address: '',
-    guest_city: '',
-    guest_state: '',
-    guest_country: 'India',
-    guest_id_type: 'passport',
-    guest_id_number: '',
+    // Guest Information - Basic Details
+    title: 'Mr',
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    gender: 'male',
+    date_of_birth: '',
+    nationality: 'India',
+    guest_category: 'Regular',
     
-    // Reservation Details
+    // Identification
+    id_type: 'Passport',
+    id_number: '',
+    id_expiry_date: '',
+    id_document: null,
+    
+    // Stay Information
     check_in_date: '',
     check_out_date: '',
-    check_in_time: '14:00',
-    check_out_time: '11:00',
-    num_adults: 1,
-    num_children: 0,
-    special_requests: '',
+    adults: 1,
+    children: 0,
+    infants: 0,
+    extra_bed: 0,
+    reservation_type: 'Confirm',
+    release_date: '',
     
-    // Room & Pricing
+    // Arrival Information
+    arrival_mode: 'Air',
+    arrival_flight_train: '',
+    arrival_date: '',
+    arrival_time: '',
+    assign_arrival_task: false,
+    
+    // Departure Information
+    departure_mode: 'Air',
+    departure_flight_train: '',
+    departure_date: '',
+    departure_time: '',
+    
+    // General Information
+    source_reference: 'Walk-In',
+    purpose_of_stay: 'Leisure',
+    bill_to: 'Guest',
+    payment_type: 'Cash',
+    payment_method: '',
+    advance_amount: 0,
+    payment_note: '',
+    
+    // Room Details
     room_type: '',
     room_number: '',
-    rate_plan: 'standard',
+    rate_plan: 'Standard',
     base_rate: 0,
-    extra_charges: 0,
     discount: 0,
-    taxes: 0,
-    total_amount: 0,
+    extra_charges: 0,
     
-    // Payment
-    deposit_amount: 0,
-    payment_method: 'cash',
-    payment_status: 'pending',
+    // Additional Services
+    valet_parking: false,
+    airport_pickup: false,
+    early_checkin: false,
+    late_checkout: false,
     
-    // Additional
-    source: 'direct',
-    notes: ''
+    // Special Instructions
+    special_instructions: []
   });
-  
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [availableRooms, setAvailableRooms] = useState([]);
-  const [checkingAvailability, setCheckingAvailability] = useState(false);
-  const [step, setStep] = useState(1); // Multi-step form: 1=Guest, 2=Stay, 3=Room&Payment, 4=Review
 
-  // Mock data - Manager sees only their hotel's resources
-  const mockGuests = [
-    { id: 1, name: 'John Smith', email: 'john@example.com', phone: '+91 98765 43210' },
-    { id: 2, name: 'Sarah Johnson', email: 'sarah@example.com', phone: '+91 87654 32109' },
-    { id: 3, name: 'Michael Chen', email: 'michael@example.com', phone: '+91 76543 21098' }
-  ];
+  const [folioCharges, setFolioCharges] = useState([]);
+  const [specialInstructions, setSpecialInstructions] = useState([]);
 
-  // Manager Restriction: Fixed base rates, cannot be modified beyond 5%
-  const mockRoomTypes = [
-    { 
-      id: 'standard', 
-      name: 'Standard Room', 
-      base_rate: 3000,
-      max_discount: 5, // Manager can give max 5% discount
-      capacity: { adults: 2, children: 1 }
-    },
-    { 
-      id: 'deluxe', 
-      name: 'Deluxe Room', 
-      base_rate: 5000,
-      max_discount: 5,
-      capacity: { adults: 2, children: 2 }
-    },
-    { 
-      id: 'suite', 
-      name: 'Executive Suite', 
-      base_rate: 8000,
-      max_discount: 5,
-      capacity: { adults: 3, children: 2 }
-    },
-    { 
-      id: 'family', 
-      name: 'Family Room', 
-      base_rate: 6500,
-      max_discount: 5,
-      capacity: { adults: 4, children: 2 }
-    }
-  ];
-
-  const TAX_RATE = 0.18; // 18% GST - Manager cannot modify
-
-  useEffect(() => {
-    // Auto-calculate totals when relevant fields change
-    calculateTotals();
-  }, [formData.base_rate, formData.extra_charges, formData.discount, formData.check_in_date, formData.check_out_date]);
-
-  const calculateTotals = () => {
-    const nights = calculateNights();
-    if (nights <= 0) return;
-
-    const baseTotal = formData.base_rate * nights;
-    const withExtras = baseTotal + parseFloat(formData.extra_charges || 0);
-    const afterDiscount = withExtras - parseFloat(formData.discount || 0);
-    const taxes = afterDiscount * TAX_RATE;
-    const total = afterDiscount + taxes;
-
-    setFormData(prev => ({
-      ...prev,
-      taxes: Math.round(taxes),
-      total_amount: Math.round(total),
-      deposit_amount: Math.round(total * 0.3) // Auto-suggest 30% deposit
-    }));
-  };
-
+  // Calculate nights
   const calculateNights = () => {
-    if (!formData.check_in_date || !formData.check_out_date) return 0;
-    const checkIn = new Date(formData.check_in_date);
-    const checkOut = new Date(formData.check_out_date);
-    const diff = checkOut - checkIn;
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    if (formData.check_in_date && formData.check_out_date) {
+      const checkIn = new Date(formData.check_in_date);
+      const checkOut = new Date(formData.check_out_date);
+      const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+      return nights > 0 ? nights : 0;
+    }
+    return 0;
   };
+
+  // Calculate billing summary
+  const calculateBilling = () => {
+    const nights = calculateNights();
+    const roomCharges = formData.base_rate * nights;
+    const discountAmount = (roomCharges * formData.discount) / 100;
+    const subtotal = roomCharges - discountAmount;
+    const taxAmount = (subtotal * 12) / 100; // 12% tax
+    const extraChargesTotal = parseFloat(formData.extra_charges || 0);
+    const totalAmount = subtotal + taxAmount + extraChargesTotal;
+    const amountPaid = parseFloat(formData.advance_amount || 0);
+    const balanceDue = totalAmount - amountPaid;
+
+    return {
+      nights,
+      roomCharges,
+      discountAmount,
+      subtotal,
+      taxAmount,
+      extraChargesTotal,
+      totalAmount,
+      amountPaid,
+      balanceDue
+    };
+  };
+
+  const billing = calculateBilling();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -152,1050 +129,1046 @@ const CreateManagerReservation = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({ ...prev, id_document: file }));
+      toast.success('Document uploaded');
     }
   };
 
-  const handleGuestSelect = (guestId) => {
-    if (guestId === '') {
-      setFormData(prev => ({
-        ...prev,
-        guest_id: '',
-        guest_name: '',
-        guest_email: '',
-        guest_phone: ''
-      }));
-      return;
-    }
-
-    const guest = mockGuests.find(g => g.id === parseInt(guestId));
-    if (guest) {
-      setFormData(prev => ({
-        ...prev,
-        guest_id: guestId,
-        guest_name: guest.name,
-        guest_email: guest.email,
-        guest_phone: guest.phone,
-        guest_type: 'existing'
-      }));
-    }
+  const addFolioCharge = () => {
+    const newCharge = {
+      id: Date.now(),
+      posting_date: new Date().toISOString().split('T')[0],
+      description: '',
+      amount: 0,
+      category: 'Room'
+    };
+    setFolioCharges([...folioCharges, newCharge]);
   };
 
-  const handleRoomTypeChange = (roomTypeId) => {
-    const roomType = mockRoomTypes.find(rt => rt.id === roomTypeId);
-    if (roomType) {
-      // Manager Restriction: Cannot modify base rate
-      setFormData(prev => ({
-        ...prev,
-        room_type: roomTypeId,
-        base_rate: roomType.base_rate
-      }));
-      
-      // Check availability
-      checkRoomAvailability(roomTypeId);
-    }
+  const removeFolioCharge = (id) => {
+    setFolioCharges(folioCharges.filter(charge => charge.id !== id));
   };
 
-  const checkRoomAvailability = async (roomTypeId = formData.room_type) => {
-    if (!formData.check_in_date || !formData.check_out_date || !roomTypeId) return;
-
-    // Manager Restriction: Cannot book dates in the past
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const checkInDate = new Date(formData.check_in_date);
-    
-    if (checkInDate < today) {
-      toast.error('Cannot book dates in the past');
-      setFormData(prev => ({ ...prev, check_in_date: '' }));
-      return;
-    }
-
-    try {
-      setCheckingAvailability(true);
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock available rooms
-      const mockAvailable = [
-        { id: 101, number: '101', floor: 1, view: 'Garden' },
-        { id: 102, number: '102', floor: 1, view: 'Pool' },
-        { id: 201, number: '201', floor: 2, view: 'City' },
-        { id: 202, number: '202', floor: 2, view: 'Garden' }
-      ];
-      
-      setAvailableRooms(mockAvailable);
-      toast.success(`${mockAvailable.length} rooms available`);
-    } catch (error) {
-      console.error('Error checking availability:', error);
-      toast.error('Failed to check availability');
-    } finally {
-      setCheckingAvailability(false);
-    }
+  const addSpecialInstruction = () => {
+    const newInstruction = {
+      id: Date.now(),
+      department: 'Front Office',
+      description: '',
+      priority: 'Normal'
+    };
+    setSpecialInstructions([...specialInstructions, newInstruction]);
   };
 
-  const validateStep = (currentStep) => {
-    const newErrors = {};
-
-    if (currentStep === 1) {
-      // Guest Information
-      if (!formData.guest_name.trim()) newErrors.guest_name = 'Guest name is required';
-      if (!formData.guest_email.trim()) newErrors.guest_email = 'Email is required';
-      if (!formData.guest_phone.trim()) newErrors.guest_phone = 'Phone is required';
-      if (!formData.guest_id_number.trim()) newErrors.guest_id_number = 'ID number is required';
-    }
-
-    if (currentStep === 2) {
-      // Stay Information
-      if (!formData.check_in_date) newErrors.check_in_date = 'Check-in date is required';
-      if (!formData.check_out_date) newErrors.check_out_date = 'Check-out date is required';
-      
-      // Manager Restriction: Validate check-in date is not in past
-      if (formData.check_in_date) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const checkIn = new Date(formData.check_in_date);
-        if (checkIn < today) {
-          newErrors.check_in_date = 'Cannot book dates in the past';
-        }
-      }
-      
-      if (formData.check_in_date && formData.check_out_date) {
-        const checkIn = new Date(formData.check_in_date);
-        const checkOut = new Date(formData.check_out_date);
-        if (checkOut <= checkIn) {
-          newErrors.check_out_date = 'Check-out must be after check-in';
-        }
-      }
-      
-      if (formData.num_adults < 1) newErrors.num_adults = 'At least 1 adult required';
-    }
-
-    if (currentStep === 3) {
-      // Room & Payment
-      if (!formData.room_type) newErrors.room_type = 'Room type is required';
-      
-      // Manager Restriction: Validate discount doesn't exceed limit
-      if (formData.discount > 0) {
-        const roomType = mockRoomTypes.find(rt => rt.id === formData.room_type);
-        if (roomType) {
-          const maxDiscount = formData.base_rate * calculateNights() * (roomType.max_discount / 100);
-          if (formData.discount > maxDiscount) {
-            newErrors.discount = `Maximum discount allowed: ₹${maxDiscount} (${roomType.max_discount}%)`;
-          }
-        }
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleNext = () => {
-    if (validateStep(step)) {
-      setStep(prev => Math.min(prev + 1, 4));
-    }
-  };
-
-  const handlePrevious = () => {
-    setStep(prev => Math.max(prev - 1, 1));
+  const removeSpecialInstruction = (id) => {
+    setSpecialInstructions(specialInstructions.filter(inst => inst.id !== id));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateStep(step)) return;
+    setLoading(true);
 
     try {
-      setLoading(true);
-      
+      // Validate required fields
+      if (!formData.first_name || !formData.last_name) {
+        toast.error('Please fill in required fields');
+        setLoading(false);
+        return;
+      }
+
       // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       toast.success('Reservation created successfully!');
       navigate('/manager/reservations');
     } catch (error) {
-      console.error('Error creating reservation:', error);
+      console.error('Error:', error);
       toast.error('Failed to create reservation');
     } finally {
       setLoading(false);
     }
   };
 
-  const renderStepIndicator = () => (
-    <div className="flex items-center justify-center mb-8">
-      {[
-        { num: 1, label: 'Guest Info' },
-        { num: 2, label: 'Stay Details' },
-        { num: 3, label: 'Room & Payment' },
-        { num: 4, label: 'Review' }
-      ].map((s, index) => (
-        <React.Fragment key={s.num}>
-          <div className="flex flex-col items-center">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-              step > s.num ? 'bg-green-600 text-white' :
-              step === s.num ? 'bg-blue-600 text-white' :
-              'bg-gray-200 text-gray-600'
-            }`}>
-              {step > s.num ? <CheckCircle2 className="w-5 h-5" /> : s.num}
-            </div>
-            <span className="text-xs mt-2 text-gray-600 font-medium">{s.label}</span>
-          </div>
-          {index < 3 && (
-            <div className={`w-16 h-1 mx-2 rounded ${
-              step > s.num ? 'bg-green-600' : 'bg-gray-200'
-            }`} />
-          )}
-        </React.Fragment>
-      ))}
-    </div>
-  );
-
-  const renderGuestInfo = () => (
-    <div className="space-y-6">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-blue-900">
-          <p className="font-medium">Select existing guest or create new</p>
-          <p className="text-blue-700 mt-1">All guest information is required for check-in</p>
-        </div>
-      </div>
-
-      {/* Guest Type Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Guest Type</label>
-        <div className="flex gap-4">
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="radio"
-              name="guest_type"
-              value="existing"
-              checked={formData.guest_type === 'existing'}
-              onChange={handleInputChange}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-            />
-            <span className="ml-2 text-sm text-gray-700">Existing Guest</span>
-          </label>
-          <label className="flex items-center cursor-pointer">
-            <input
-              type="radio"
-              name="guest_type"
-              value="new"
-              checked={formData.guest_type === 'new'}
-              onChange={handleInputChange}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-            />
-            <span className="ml-2 text-sm text-gray-700">New Guest</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Select Existing Guest */}
-      {formData.guest_type === 'existing' && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Select Guest</label>
-          <select
-            value={formData.guest_id}
-            onChange={(e) => handleGuestSelect(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header - Fixed */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-20 shadow-sm">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/manager/reservations')}
+            className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            <option value="">Choose a guest</option>
-            {mockGuests.map(guest => (
-              <option key={guest.id} value={guest.id}>
-                {guest.name} - {guest.email} - {guest.phone}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Guest Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Full Name <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              name="guest_name"
-              value={formData.guest_name}
-              onChange={handleInputChange}
-              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.guest_name ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Enter guest name"
-            />
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Create New Reservation</h1>
+            <p className="text-sm text-gray-500">Fill in the details to create a reservation</p>
           </div>
-          {errors.guest_name && (
-            <p className="mt-1 text-sm text-red-600">{errors.guest_name}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Email <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="email"
-              name="guest_email"
-              value={formData.guest_email}
-              onChange={handleInputChange}
-              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.guest_email ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="guest@example.com"
-            />
-          </div>
-          {errors.guest_email && (
-            <p className="mt-1 text-sm text-red-600">{errors.guest_email}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Phone Number <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="tel"
-              name="guest_phone"
-              value={formData.guest_phone}
-              onChange={handleInputChange}
-              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.guest_phone ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="+91 98765 43210"
-            />
-          </div>
-          {errors.guest_phone && (
-            <p className="mt-1 text-sm text-red-600">{errors.guest_phone}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            ID Type <span className="text-red-500">*</span>
-          </label>
-          <select
-            name="guest_id_type"
-            value={formData.guest_id_type}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="passport">Passport</option>
-            <option value="driving_license">Driving License</option>
-            <option value="aadhar">Aadhar Card</option>
-            <option value="voter_id">Voter ID</option>
-          </select>
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            ID Number <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            name="guest_id_number"
-            value={formData.guest_id_number}
-            onChange={handleInputChange}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.guest_id_number ? 'border-red-500' : 'border-gray-300'
-            }`}
-            placeholder="Enter ID number"
-          />
-          {errors.guest_id_number && (
-            <p className="mt-1 text-sm text-red-600">{errors.guest_id_number}</p>
-          )}
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-            <textarea
-              name="guest_address"
-              value={formData.guest_address}
-              onChange={handleInputChange}
-              rows="2"
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter full address"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-          <input
-            type="text"
-            name="guest_city"
-            value={formData.guest_city}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter city"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
-          <input
-            type="text"
-            name="guest_state"
-            value={formData.guest_state}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter state"
-          />
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderStayDetails = () => (
-    <div className="space-y-6">
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-yellow-900">
-          <p className="font-medium">Manager Restriction</p>
-          <p className="text-yellow-700 mt-1">Cannot book dates in the past. All bookings must be for current or future dates.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Check-in Date <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="date"
-              name="check_in_date"
-              value={formData.check_in_date}
-              onChange={handleInputChange}
-              min={new Date().toISOString().split('T')[0]}
-              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.check_in_date ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-          </div>
-          {errors.check_in_date && (
-            <p className="mt-1 text-sm text-red-600">{errors.check_in_date}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Check-in Time
-          </label>
-          <div className="relative">
-            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="time"
-              name="check_in_time"
-              value={formData.check_in_time}
-              onChange={handleInputChange}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Check-out Date <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="date"
-              name="check_out_date"
-              value={formData.check_out_date}
-              onChange={handleInputChange}
-              min={formData.check_in_date || new Date().toISOString().split('T')[0]}
-              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.check_out_date ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-          </div>
-          {errors.check_out_date && (
-            <p className="mt-1 text-sm text-red-600">{errors.check_out_date}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Check-out Time
-          </label>
-          <div className="relative">
-            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="time"
-              name="check_out_time"
-              value={formData.check_out_time}
-              onChange={handleInputChange}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        {formData.check_in_date && formData.check_out_date && (
-          <div className="md:col-span-2 bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-gray-900">
-              <Calendar className="w-5 h-5 text-blue-600" />
-              <span className="font-semibold">Duration:</span>
-              <span className="text-blue-600 font-bold">{calculateNights()} night(s)</span>
-            </div>
-          </div>
-        )}
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Number of Adults <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="number"
-              name="num_adults"
-              value={formData.num_adults}
-              onChange={handleInputChange}
-              min="1"
-              max="10"
-              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.num_adults ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-          </div>
-          {errors.num_adults && (
-            <p className="mt-1 text-sm text-red-600">{errors.num_adults}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Number of Children
-          </label>
-          <div className="relative">
-            <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="number"
-              name="num_children"
-              value={formData.num_children}
-              onChange={handleInputChange}
-              min="0"
-              max="5"
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Booking Source
-          </label>
-          <select
-            name="source"
-            value={formData.source}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="direct">Walk-in / Direct</option>
-            <option value="phone">Phone Booking</option>
-            <option value="email">Email Booking</option>
-            <option value="booking.com">Booking.com</option>
-            <option value="makemytrip">MakeMyTrip</option>
-            <option value="goibibo">Goibibo</option>
-            <option value="agent">Travel Agent</option>
-          </select>
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Special Requests / Notes
-          </label>
-          <textarea
-            name="special_requests"
-            value={formData.special_requests}
-            onChange={handleInputChange}
-            rows="3"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Any special requests or dietary requirements..."
-          />
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderRoomAndPayment = () => (
-    <div className="space-y-6">
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-orange-900">
-          <p className="font-medium">Manager Discount Limit</p>
-          <p className="text-orange-700 mt-1">Maximum discount allowed: 5% of base rate. Cannot modify tax rates (fixed at 18% GST).</p>
-        </div>
-      </div>
-
-      {/* Room Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Room Type <span className="text-red-500">*</span>
-        </label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {mockRoomTypes.map(roomType => (
-            <div
-              key={roomType.id}
-              onClick={() => handleRoomTypeChange(roomType.id)}
-              className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                formData.room_type === roomType.id
-                  ? 'border-blue-600 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold text-gray-900">{roomType.name}</h4>
-                <Bed className="w-5 h-5 text-gray-400" />
-              </div>
-              <p className="text-2xl font-bold text-blue-600">₹{roomType.base_rate}</p>
-              <p className="text-xs text-gray-600 mt-1">per night</p>
-              <div className="flex items-center gap-2 mt-2 text-xs text-gray-600">
-                <Users className="w-3 h-3" />
-                <span>{roomType.capacity.adults} Adults, {roomType.capacity.children} Children</span>
-              </div>
-            </div>
-          ))}
-        </div>
-        {errors.room_type && (
-          <p className="mt-2 text-sm text-red-600">{errors.room_type}</p>
-        )}
-      </div>
-
-      {/* Available Rooms */}
-      {formData.room_type && formData.check_in_date && formData.check_out_date && (
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Available Rooms
-            </label>
-            <button
-              onClick={() => checkRoomAvailability()}
-              disabled={checkingAvailability}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
-            >
-              {checkingAvailability ? (
-                <>
-                  <LoadingSpinner size="sm" />
-                  <span>Checking...</span>
-                </>
-              ) : (
-                'Refresh'
-              )}
-            </button>
-          </div>
-          {availableRooms.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {availableRooms.map(room => (
+      {/* Main Content */}
+      <div className="flex gap-6 p-6 max-w-[1920px] mx-auto items-start">
+        {/* Main Form Area - Scrollable */}
+        <div className="flex-1 max-w-5xl">
+          <div className="space-y-6 pb-8">
+            {/* Guest Type Selection */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="grid grid-cols-2 gap-4">
                 <button
-                  key={room.id}
-                  onClick={() => setFormData(prev => ({ ...prev, room_number: room.number }))}
-                  className={`p-3 border-2 rounded-lg text-sm font-medium transition-all ${
-                    formData.room_number === room.number
-                      ? 'border-blue-600 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                  type="button"
+                  onClick={() => setGuestType('existing')}
+                  className={`flex flex-col items-center justify-center py-4 px-6 rounded-xl border-2 transition-all ${
+                    guestType === 'existing'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                      : 'border-gray-200 hover:border-blue-200 hover:bg-gray-50'
                   }`}
                 >
-                  <div className="font-bold">Room {room.number}</div>
-                  <div className="text-xs text-gray-600">{room.view} View</div>
+                  <User className="w-6 h-6 mb-2" />
+                  <div className="font-semibold">Existing Guest</div>
                 </button>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-4 text-gray-500 text-sm">
-              Click "Check Availability" to see available rooms
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Pricing */}
-      {formData.room_type && calculateNights() > 0 && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-green-600" />
-            Pricing Summary
-          </h3>
-          
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Room Rate (₹{formData.base_rate} × {calculateNights()} nights)</span>
-              <span className="font-semibold text-gray-900">₹{(formData.base_rate * calculateNights()).toLocaleString()}</span>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-sm mb-2">
-                <span className="text-gray-600">Extra Charges</span>
-                <input
-                  type="number"
-                  name="extra_charges"
-                  value={formData.extra_charges}
-                  onChange={handleInputChange}
-                  min="0"
-                  className="w-32 px-3 py-1 text-right border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="0"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-sm mb-2">
-                <span className="text-gray-600">Discount (Max 5%)</span>
-                <input
-                  type="number"
-                  name="discount"
-                  value={formData.discount}
-                  onChange={handleInputChange}
-                  min="0"
-                  className={`w-32 px-3 py-1 text-right border rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.discount ? 'border-red-500' : 'border-gray-300'
+                <button
+                  type="button"
+                  onClick={() => setGuestType('new')}
+                  className={`flex flex-col items-center justify-center py-4 px-6 rounded-xl border-2 transition-all ${
+                    guestType === 'new'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                      : 'border-gray-200 hover:border-blue-200 hover:bg-gray-50'
                   }`}
-                  placeholder="0"
-                />
-              </div>
-              {errors.discount && (
-                <p className="text-xs text-red-600 text-right">{errors.discount}</p>
-              )}
-            </div>
-
-            <div className="border-t border-gray-300 pt-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Taxes (18% GST) - Fixed</span>
-                <span className="font-semibold text-gray-900">₹{formData.taxes.toLocaleString()}</span>
+                >
+                  <UserPlus className="w-6 h-6 mb-2" />
+                  <div className="font-semibold">New Guest</div>
+                </button>
               </div>
             </div>
 
-            <div className="border-t-2 border-gray-400 pt-3">
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-bold text-gray-900">Total Amount</span>
-                <span className="text-2xl font-bold text-green-600">₹{formData.total_amount.toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Payment Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Payment Method
-          </label>
-          <div className="relative">
-            <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <select
-              name="payment_method"
-              value={formData.payment_method}
-              onChange={handleInputChange}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="cash">Cash</option>
-              <option value="card">Credit/Debit Card</option>
-              <option value="upi">UPI</option>
-              <option value="bank_transfer">Bank Transfer</option>
-              <option value="cheque">Cheque</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Payment Status
-          </label>
-          <select
-            name="payment_status"
-            value={formData.payment_status}
-            onChange={handleInputChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="pending">Pending</option>
-            <option value="partial">Partial Payment</option>
-            <option value="paid">Paid in Full</option>
-          </select>
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Deposit Amount (Suggested: 30%)
-          </label>
-          <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="number"
-              name="deposit_amount"
-              value={formData.deposit_amount}
-              onChange={handleInputChange}
-              min="0"
-              max={formData.total_amount}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="0"
-            />
-          </div>
-          <p className="mt-1 text-xs text-gray-500">
-            Remaining: ₹{(formData.total_amount - formData.deposit_amount).toLocaleString()}
-          </p>
-        </div>
-      </div>
-
-      {/* Notes */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Internal Notes
-        </label>
-        <textarea
-          name="notes"
-          value={formData.notes}
-          onChange={handleInputChange}
-          rows="3"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="Internal notes for staff..."
-        />
-      </div>
-    </div>
-  );
-
-  const renderReview = () => (
-    <div className="space-y-6">
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-        <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-green-900">
-          <p className="font-medium">Review your reservation details</p>
-          <p className="text-green-700 mt-1">Please verify all information before creating the reservation</p>
-        </div>
-      </div>
-
-      {/* Guest Details Review */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <User className="w-5 h-5 text-blue-600" />
-          Guest Information
-        </h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-600">Name:</span>
-            <span className="ml-2 font-medium text-gray-900">{formData.guest_name}</span>
-          </div>
-          <div>
-            <span className="text-gray-600">Email:</span>
-            <span className="ml-2 font-medium text-gray-900">{formData.guest_email}</span>
-          </div>
-          <div>
-            <span className="text-gray-600">Phone:</span>
-            <span className="ml-2 font-medium text-gray-900">{formData.guest_phone}</span>
-          </div>
-          <div>
-            <span className="text-gray-600">ID:</span>
-            <span className="ml-2 font-medium text-gray-900 capitalize">{formData.guest_id_type} - {formData.guest_id_number}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Stay Details Review */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-green-600" />
-          Stay Details
-        </h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-600">Check-in:</span>
-            <span className="ml-2 font-medium text-gray-900">
-              {new Date(formData.check_in_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} at {formData.check_in_time}
-            </span>
-          </div>
-          <div>
-            <span className="text-gray-600">Check-out:</span>
-            <span className="ml-2 font-medium text-gray-900">
-              {new Date(formData.check_out_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} at {formData.check_out_time}
-            </span>
-          </div>
-          <div>
-            <span className="text-gray-600">Duration:</span>
-            <span className="ml-2 font-medium text-blue-600">{calculateNights()} night(s)</span>
-          </div>
-          <div>
-            <span className="text-gray-600">Guests:</span>
-            <span className="ml-2 font-medium text-gray-900">{formData.num_adults} Adult(s), {formData.num_children} Child(ren)</span>
-          </div>
-          <div className="col-span-2">
-            <span className="text-gray-600">Source:</span>
-            <span className="ml-2 font-medium text-gray-900 capitalize">{formData.source}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Room & Pricing Review */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Building className="w-5 h-5 text-purple-600" />
-          Room & Pricing
-        </h3>
-        <div className="space-y-3">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Room Type:</span>
-            <span className="font-medium text-gray-900 capitalize">{mockRoomTypes.find(rt => rt.id === formData.room_type)?.name}</span>
-          </div>
-          {formData.room_number && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Room Number:</span>
-              <span className="font-medium text-blue-600">{formData.room_number}</span>
-            </div>
-          )}
-          <div className="border-t border-gray-200 pt-3 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Base Rate × {calculateNights()} nights:</span>
-              <span className="font-medium text-gray-900">₹{(formData.base_rate * calculateNights()).toLocaleString()}</span>
-            </div>
-            {formData.extra_charges > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Extra Charges:</span>
-                <span className="font-medium text-gray-900">₹{formData.extra_charges.toLocaleString()}</span>
+            {/* Existing Guest Search */}
+            {guestType === 'existing' && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 className="text-base font-semibold text-gray-900 mb-4">Search Existing Guest</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Phone Number"
+                    className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <button className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors">
+                    Search
+                  </button>
+                </div>
               </div>
             )}
-            {formData.discount > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Discount:</span>
-                <span className="font-medium text-red-600">-₹{formData.discount.toLocaleString()}</span>
+
+            {/* Main Form */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* 1. Guest Information */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <User className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-gray-900">Guest Information</h2>
+                </div>
+
+                {/* Basic Details */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Basic Details</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                      <select
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                        required
+                      >
+                        <option value="Mr">Mr</option>
+                        <option value="Ms">Ms</option>
+                        <option value="Mrs">Mrs</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                      <input
+                        type="text"
+                        name="first_name"
+                        value={formData.first_name}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                      <input
+                        type="text"
+                        name="last_name"
+                        value={formData.last_name}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                      <select
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      >
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                      <input
+                        type="date"
+                        name="date_of_birth"
+                        value={formData.date_of_birth}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Nationality</label>
+                      <input
+                        type="text"
+                        name="nationality"
+                        value={formData.nationality}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Guest Category</label>
+                      <select
+                        name="guest_category"
+                        value={formData.guest_category}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      >
+                        <option value="Regular">Regular</option>
+                        <option value="VIP">VIP</option>
+                        <option value="Corporate">Corporate</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Identification */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Identification</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">ID Type</label>
+                      <select
+                        name="id_type"
+                        value={formData.id_type}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      >
+                        <option value="Passport">Passport</option>
+                        <option value="Aadhaar">Aadhaar</option>
+                        <option value="National ID">National ID</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">ID Number</label>
+                      <input
+                        type="text"
+                        name="id_number"
+                        value={formData.id_number}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">ID Expiry Date</label>
+                      <input
+                        type="date"
+                        name="id_expiry_date"
+                        value={formData.id_expiry_date}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Upload ID Document</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          id="id-upload"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                        />
+                        <label
+                          htmlFor="id-upload"
+                          className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 w-full"
+                        >
+                          <Upload className="w-4 h-4" />
+                          {formData.id_document ? 'File Selected' : 'Choose File'}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            )}
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Taxes (18% GST):</span>
-              <span className="font-medium text-gray-900">₹{formData.taxes.toLocaleString()}</span>
-            </div>
-            <div className="border-t-2 border-gray-300 pt-2 flex justify-between">
-              <span className="text-lg font-bold text-gray-900">Total Amount:</span>
-              <span className="text-2xl font-bold text-green-600">₹{formData.total_amount.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Payment Review */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <CreditCard className="w-5 h-5 text-orange-600" />
-          Payment Details
-        </h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-600">Payment Method:</span>
-            <span className="ml-2 font-medium text-gray-900 capitalize">{formData.payment_method.replace('_', ' ')}</span>
-          </div>
-          <div>
-            <span className="text-gray-600">Payment Status:</span>
-            <span className="ml-2 font-medium text-gray-900 capitalize">{formData.payment_status}</span>
-          </div>
-          <div>
-            <span className="text-gray-600">Deposit Amount:</span>
-            <span className="ml-2 font-medium text-blue-600">₹{formData.deposit_amount.toLocaleString()}</span>
-          </div>
-          <div>
-            <span className="text-gray-600">Remaining:</span>
-            <span className="ml-2 font-medium text-red-600">₹{(formData.total_amount - formData.deposit_amount).toLocaleString()}</span>
-          </div>
-        </div>
-      </div>
+              {/* 2. Stay Information */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-green-600" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-gray-900">Stay Information</h2>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Check-In Date *</label>
+                    <input
+                      type="date"
+                      name="check_in_date"
+                      value={formData.check_in_date}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Check-Out Date *</label>
+                    <input
+                      type="date"
+                      name="check_out_date"
+                      value={formData.check_out_date}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Number of Nights</label>
+                    <input
+                      type="text"
+                      value={calculateNights()}
+                      readOnly
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Adults</label>
+                    <input
+                      type="number"
+                      name="adults"
+                      value={formData.adults}
+                      onChange={handleInputChange}
+                      min="1"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Children</label>
+                    <input
+                      type="number"
+                      name="children"
+                      value={formData.children}
+                      onChange={handleInputChange}
+                      min="0"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Infants</label>
+                    <input
+                      type="number"
+                      name="infants"
+                      value={formData.infants}
+                      onChange={handleInputChange}
+                      min="0"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Extra Bed</label>
+                    <input
+                      type="number"
+                      name="extra_bed"
+                      value={formData.extra_bed}
+                      onChange={handleInputChange}
+                      min="0"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Reservation Type</label>
+                    <select
+                      name="reservation_type"
+                      value={formData.reservation_type}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    >
+                      <option value="Confirm">Confirm</option>
+                      <option value="Tentative">Tentative</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Release Date</label>
+                    <input
+                      type="date"
+                      name="release_date"
+                      value={formData.release_date}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
 
-      {formData.special_requests && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-sm font-medium text-yellow-900">Special Requests:</p>
-          <p className="text-sm text-yellow-800 mt-1">{formData.special_requests}</p>
-        </div>
-      )}
-    </div>
-  );
+              {/* 3. Arrival/Departure Information */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Plane className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-gray-900">Arrival / Departure Information</h2>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Arrival */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Arrival</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Arrival Mode</label>
+                        <select
+                          name="arrival_mode"
+                          value={formData.arrival_mode}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                        >
+                          <option value="Air">Air</option>
+                          <option value="Train">Train</option>
+                          <option value="Car">Car</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Flight/Train No</label>
+                        <input
+                          type="text"
+                          name="arrival_flight_train"
+                          value={formData.arrival_flight_train}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Arrival Date</label>
+                        <input
+                          type="date"
+                          name="arrival_date"
+                          value={formData.arrival_date}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Arrival Time</label>
+                        <input
+                          type="time"
+                          name="arrival_time"
+                          value={formData.arrival_time}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          name="assign_arrival_task"
+                          checked={formData.assign_arrival_task}
+                          onChange={handleInputChange}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                        />
+                        <label className="ml-2 text-sm text-gray-700">Assign Task</label>
+                      </div>
+                    </div>
+                  </div>
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/manager/reservations')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Create New Reservation</h1>
-              <p className="text-sm text-gray-600 mt-1">Fill in the details to create a new booking</p>
-            </div>
-          </div>
-        </div>
+                  {/* Departure */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Departure</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Departure Mode</label>
+                        <select
+                          name="departure_mode"
+                          value={formData.departure_mode}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                        >
+                          <option value="Air">Air</option>
+                          <option value="Train">Train</option>
+                          <option value="Car">Car</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Flight/Train No</label>
+                        <input
+                          type="text"
+                          name="departure_flight_train"
+                          value={formData.departure_flight_train}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Departure Date</label>
+                        <input
+                          type="date"
+                          name="departure_date"
+                          value={formData.departure_date}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Departure Time</label>
+                        <input
+                          type="time"
+                          name="departure_time"
+                          value={formData.departure_time}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-        {/* Form Container */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
-          {renderStepIndicator()}
+              {/* 4. General Information */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-gray-900">General Information</h2>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Source/Reference</label>
+                    <select
+                      name="source_reference"
+                      value={formData.source_reference}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    >
+                      <option value="OTA">OTA</option>
+                      <option value="Walk-In">Walk-In</option>
+                      <option value="Agent">Agent</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Purpose of Stay</label>
+                    <select
+                      name="purpose_of_stay"
+                      value={formData.purpose_of_stay}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    >
+                      <option value="Business">Business</option>
+                      <option value="Leisure">Leisure</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Bill To</label>
+                    <select
+                      name="bill_to"
+                      value={formData.bill_to}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    >
+                      <option value="Guest">Guest</option>
+                      <option value="Company">Company</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Payment Type</label>
+                    <select
+                      name="payment_type"
+                      value={formData.payment_type}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    >
+                      <option value="Cash">Cash</option>
+                      <option value="Card">Card</option>
+                      <option value="UPI">UPI</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                    <input
+                      type="text"
+                      name="payment_method"
+                      value={formData.payment_method}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Advance Amount</label>
+                    <input
+                      type="number"
+                      name="advance_amount"
+                      value={formData.advance_amount}
+                      onChange={handleInputChange}
+                      min="0"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="md:col-span-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Payment Note</label>
+                    <textarea
+                      name="payment_note"
+                      value={formData.payment_note}
+                      onChange={handleInputChange}
+                      rows="3"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
 
-          <form onSubmit={handleSubmit}>
-            {step === 1 && renderGuestInfo()}
-            {step === 2 && renderStayDetails()}
-            {step === 3 && renderRoomAndPayment()}
-            {step === 4 && renderReview()}
+              {/* 5. Room Details */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
+                  <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <Bed className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-gray-900">Room Details</h2>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Room Type *</label>
+                    <select
+                      name="room_type"
+                      value={formData.room_type}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                      required
+                    >
+                      <option value="">Select Room Type</option>
+                      <option value="Standard">Standard</option>
+                      <option value="Deluxe">Deluxe</option>
+                      <option value="Suite">Suite</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Room Number</label>
+                    <select
+                      name="room_number"
+                      value={formData.room_number}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    >
+                      <option value="">Select Room</option>
+                      <option value="101">101</option>
+                      <option value="102">102</option>
+                      <option value="103">103</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Rate Plan</label>
+                    <select
+                      name="rate_plan"
+                      value={formData.rate_plan}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    >
+                      <option value="Standard">Standard</option>
+                      <option value="Corporate">Corporate</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Base Rate (Per Night) *</label>
+                    <input
+                      type="number"
+                      name="base_rate"
+                      value={formData.base_rate}
+                      onChange={handleInputChange}
+                      min="0"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Discount (%)</label>
+                    <input
+                      type="number"
+                      name="discount"
+                      value={formData.discount}
+                      onChange={handleInputChange}
+                      min="0"
+                      max="100"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Extra Charges</label>
+                    <input
+                      type="number"
+                      name="extra_charges"
+                      value={formData.extra_charges}
+                      onChange={handleInputChange}
+                      min="0"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={step === 1 ? () => navigate('/manager/reservations') : handlePrevious}
-                className="px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                {step === 1 ? 'Cancel' : 'Previous'}
-              </button>
-
-              <div className="flex items-center gap-3">
-                {step < 4 ? (
+              {/* 6. Folio Details */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                      <DollarSign className="w-5 h-5 text-yellow-600" />
+                    </div>
+                    <h2 className="text-lg font-semibold text-gray-900">Folio Details</h2>
+                  </div>
                   <button
                     type="button"
-                    onClick={handleNext}
-                    className="px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                    onClick={addFolioCharge}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
                   >
-                    Next Step
+                    <Plus className="w-4 h-4" />
+                    Add Charge
                   </button>
+                </div>
+                
+                {folioCharges.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">No charges added yet</p>
                 ) : (
+                  <div className="space-y-3">
+                    {folioCharges.map((charge) => (
+                      <div key={charge.id} className="flex gap-3 items-end">
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Posting Date</label>
+                          <input
+                            type="date"
+                            value={charge.posting_date}
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                          <input
+                            type="text"
+                            placeholder="Charge description"
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
+                          <input
+                            type="number"
+                            placeholder="0"
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                          <select className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white">
+                            <option value="Room">Room</option>
+                            <option value="F&B">F&B</option>
+                            <option value="Laundry">Laundry</option>
+                          </select>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFolioCharge(charge.id)}
+                          className="px-3 py-2.5 text-red-600 hover:text-red-700 border border-red-300 rounded-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 7. Special Instructions */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-pink-600" />
+                    </div>
+                    <h2 className="text-lg font-semibold text-gray-900">Special Instructions</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addSpecialInstruction}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Instruction
+                  </button>
+                </div>
+                
+                {specialInstructions.length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">No instructions added yet</p>
+                ) : (
+                  <div className="space-y-3">
+                    {specialInstructions.map((instruction) => (
+                      <div key={instruction.id} className="flex gap-3 items-end">
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                          <select className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white">
+                            <option value="HK">Housekeeping</option>
+                            <option value="Front Office">Front Office</option>
+                            <option value="F&B">F&B</option>
+                          </select>
+                        </div>
+                        <div className="flex-[2]">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                          <input
+                            type="text"
+                            placeholder="Instruction description"
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                          <select className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-white">
+                            <option value="Normal">Normal</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">Urgent</option>
+                          </select>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeSpecialInstruction(instruction.id)}
+                          className="px-3 py-2.5 text-red-600 hover:text-red-700 border border-red-300 rounded-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 9. Additional Services */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
+                  <div className="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
+                    <Star className="w-5 h-5 text-teal-600" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-gray-900">Additional Services</h2>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="valet_parking"
+                      checked={formData.valet_parking}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 text-sm text-gray-700">Valet Parking</label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="airport_pickup"
+                      checked={formData.airport_pickup}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 text-sm text-gray-700">Airport Pickup</label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="early_checkin"
+                      checked={formData.early_checkin}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 text-sm text-gray-700">Early Check-In</label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="late_checkout"
+                      checked={formData.late_checkout}
+                      onChange={handleInputChange}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 text-sm text-gray-700">Late Check-Out</label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/manager/reservations')}
+                    className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+                    disabled={loading}
+                  >
+                    Cancel
+                  </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex items-center gap-2 px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-8 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-medium transition-colors shadow-sm disabled:opacity-50"
                   >
-                    {loading ? (
-                      <>
-                        <LoadingSpinner size="sm" />
-                        <span>Creating...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4" />
-                        <span>Create Reservation</span>
-                      </>
-                    )}
+                    <Save className="w-4 h-4" />
+                    {loading ? 'Saving...' : 'Save Reservation'}
                   </button>
-                )}
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* Right Sidebar - Billing Summary (Sticky) */}
+        <aside className="w-96 flex-shrink-0">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-24">
+            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
+              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Billing Summary</h3>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between py-2">
+                <span className="text-sm text-gray-600">Nights:</span>
+                <span className="font-semibold text-gray-900">{billing.nights}</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-sm text-gray-600">Base Rate:</span>
+                <span className="font-semibold text-gray-900">₹{formData.base_rate || 0}</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-sm text-gray-600">Room Charges:</span>
+                <span className="font-semibold text-gray-900">₹{billing.roomCharges.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-sm text-gray-600">Discount ({formData.discount}%):</span>
+                <span className="font-semibold text-red-600">-₹{billing.discountAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-sm text-gray-600">Subtotal:</span>
+                <span className="font-semibold text-gray-900">₹{billing.subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-sm text-gray-600">Tax (12%):</span>
+                <span className="font-semibold text-gray-900">₹{billing.taxAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-sm text-gray-600">Extra Charges:</span>
+                <span className="font-semibold text-gray-900">₹{billing.extraChargesTotal.toFixed(2)}</span>
+              </div>
+              <div className="border-t-2 border-gray-200 mt-4 pt-4">
+                <div className="flex justify-between py-2 bg-blue-50 px-3 rounded-lg">
+                  <span className="font-semibold text-gray-900">Total Amount:</span>
+                  <span className="font-bold text-lg text-blue-600">₹{billing.totalAmount.toFixed(2)}</span>
+                </div>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-sm text-gray-600">Amount Paid:</span>
+                <span className="font-semibold text-green-600">₹{billing.amountPaid.toFixed(2)}</span>
+              </div>
+              <div className="border-t-2 border-gray-200 mt-4 pt-4">
+                <div className="flex justify-between py-2 bg-red-50 px-3 rounded-lg">
+                  <span className="font-semibold text-gray-900">Balance Due:</span>
+                  <span className="font-bold text-lg text-red-600">₹{billing.balanceDue.toFixed(2)}</span>
+                </div>
               </div>
             </div>
-          </form>
-        </div>
+
+            {/* Guest Summary */}
+            <div className="mt-6 pt-6 border-t-2 border-gray-200">
+              <h4 className="font-semibold mb-4 text-gray-900">Guest Summary</h4>
+              <div className="space-y-3 bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between py-1">
+                  <span className="text-sm text-gray-600">Guest:</span>
+                  <span className="font-medium text-sm text-gray-900">{formData.first_name || '-'} {formData.last_name || ''}</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-sm text-gray-600">Email:</span>
+                  <span className="font-medium text-xs text-gray-900">{formData.email || '-'}</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-sm text-gray-600">Phone:</span>
+                  <span className="font-medium text-sm text-gray-900">{formData.phone || '-'}</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-sm text-gray-600">Adults:</span>
+                  <span className="font-medium text-sm text-gray-900">{formData.adults}</span>
+                </div>
+                {formData.children > 0 && (
+                  <div className="flex justify-between py-1">
+                    <span className="text-sm text-gray-600">Children:</span>
+                    <span className="font-medium text-sm text-gray-900">{formData.children}</span>
+                  </div>
+                )}
+                <div className="flex justify-between py-1">
+                  <span className="text-sm text-gray-600">Room Type:</span>
+                  <span className="font-medium text-sm text-gray-900">{formData.room_type || '-'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   );
 };
 
-export default CreateManagerReservation;
+export default CreateReservation;
